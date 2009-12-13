@@ -29,7 +29,7 @@
 #include <avr/eeprom.h>
 
 
-extern TammerCommand_t command;
+extern TamerCommand_t command;
 
 
 extern RingBuff_t USARTtoUSB_Buffer;
@@ -126,14 +126,14 @@ uint8_t resOk[] PROGMEM = "OK";
 uint8_t resNotSupported[] PROGMEM = "NOT SUPPORTED YET";
 uint8_t resErr[] PROGMEM = "ERROR";
 
-uint8_t resVersion[] PROGMEM = "ClockTammer V1.0 [beta]";
+uint8_t resVersion[] PROGMEM = "ClockTamer V1.0 [beta]";
 uint8_t resBadRange[] PROGMEM = "Bad tuning range";
 
 
 
-#define SERG_TAMMER
+#define SERG_TAMER
 
-#ifdef SERG_TAMMER
+#ifdef SERG_TAMER
 
 //#define DEF_Fosc            26000035
 #define DEF_Fosc            26000000
@@ -148,7 +148,7 @@ uint8_t resBadRange[] PROGMEM = "Bad tuning range";
 // LMX2080E
 //#define Kbit              4500
 #else
-// ALEX_TAMMER
+// ALEX_TAMER
 #define DEF_Fosc            9999983
 #define DEF_Fout            52000000
 

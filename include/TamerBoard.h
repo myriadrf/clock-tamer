@@ -20,8 +20,8 @@
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#ifndef _TAMMER_BOARD_H_
-#define _TAMMER_BOARD_H_
+#ifndef _TAMER_BOARD_H_
+#define _TAMER_BOARD_H_
 
 
 #include <avr/io.h>
@@ -101,4 +101,4 @@ void write_reg_LMK0X0XX(uint8_t f1, uint8_t f2, uint8_t f3, uint8_t f4);
 
 
 
-#endif //_TAMMER_BOARD_H_
+#endif //_TAMER_BOARD_H_

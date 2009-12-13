@@ -20,8 +20,8 @@
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#ifndef _TAMMER_PROTOCOL_H_
-#define _TAMMER_PROTOCOL_H_
+#ifndef _TAMER_PROTOCOL_H_
+#define _TAMER_PROTOCOL_H_
 
 
 /*
@@ -49,7 +49,7 @@ NFO
 
 
 
-typedef enum tammerCommandType
+typedef enum tamerCommandType
 {
     cmdIDLE = 0,
     cmdREG,
@@ -64,7 +64,7 @@ typedef enum tammerCommandType
     cmdSTE,
 } CommandType_t;
 
-typedef enum tammerTargetType
+typedef enum tamerTargetType
 {
     trgNONE = 0,
     trgLMK,
@@ -75,7 +75,7 @@ typedef enum tammerTargetType
 
 } TargetType_t;
 
-typedef enum tammerTargetDetails
+typedef enum tamerTargetDetails
 {
     detNONE = 0,
     detEN,
@@ -92,7 +92,7 @@ typedef enum tammerTargetDetails
 } TargetDetails_t;
 
 
-typedef struct tammerCommad
+typedef struct tamerCommad
 {
     CommandType_t    cmd;
     TargetType_t     type;
@@ -103,7 +103,7 @@ typedef struct tammerCommad
         uint32_t         u32data;
     };
 
-} __attribute__ ((__packed__))  TammerCommand_t;
+} __attribute__ ((__packed__))  TamerCommand_t;
 
 
-#endif //_TAMMER_PROTOCOL_H_
+#endif //_TAMER_PROTOCOL_H_

@@ -27,8 +27,8 @@
 #include "lmx2531.h"
 #include "lmk0x0xx.h"
 
-#define TAMMER_SERG
-#ifdef TAMMER_SERG
+#define TAMER_SERG
+#ifdef TAMER_SERG
 
 #define DEF_Fosc  26000055
 
@@ -42,7 +42,7 @@
 
 #else
 
-// ALEX_TAMMER
+// ALEX_TAMER
 
 #define DEF_Fosc  10000000
 

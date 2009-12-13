@@ -22,7 +22,7 @@
 
 /** \file
  *
- *  Header file for Tammer.c.
+ *  Header file for Tamer.c.
  */
 
 #ifndef _USB_SERIAL_H_

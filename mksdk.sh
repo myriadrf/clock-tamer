@@ -8,7 +8,7 @@ FUNCS="__vector_11 USB_Device_ProcessControlRequest USB_Init USB_ResetInterface 
 FUNCS="$FUNCS   Endpoint_ConfigureEndpoint_Prv Endpoint_ClearStatusStage Endpoint_ClearEndpoints  Endpoint_BytesToEPSizeMaskDynamic Endpoint_Write_Control_PStream_LE "
 FUNCS="$FUNCS   LanguageString"
 
-IN=Tammer-sdk.map
+IN=Tamer-sdk.map
 
 OUT=Out.txt
 XFILE=avr3sharedboot.x

@@ -20,7 +20,7 @@
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-// gcc TammerProtocol.c -g -Wall -o TammerTest -D_SELF_TEST_
+// gcc TamerProtocol.c -g -Wall -o TamerTest -D_SELF_TEST_
 
 
 #include <stdint.h>
@@ -83,7 +83,7 @@ uint8_t pDet[]        PROGMEM  = "ENB"
 #define DET_COUNT    (sizeof(pDet)  / WORD_SIZE)
 
 
-TammerCommand_t command;
+TamerCommand_t command;
 
 static inline uint8_t ParseParam(uint8_t w1, uint8_t w2, uint8_t w3, uint8_t* table)
 {

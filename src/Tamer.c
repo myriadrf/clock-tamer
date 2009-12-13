@@ -22,7 +22,7 @@
 
 /** \file
  *
- *  Main source file for the Tammer project. This file contains the main tasks of
+ *  Main source file for the Tamer project. This file contains the main tasks of
  *  the demo and is responsible for the initial application hardware configuration.
  */
 
