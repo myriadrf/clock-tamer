@@ -57,9 +57,14 @@
 
 #define PIN_ENTBLOADER    PB0
 
+
+#define DAC_SYNC_DDR      DDRD
+#define DAC_SYNC_PORT     PORTD
+#define DAC_SYNC          PD4
+
 void MicrowireInit(void);
 void MicrowireWriteByte(uint8_t data);
-
+void MicrowireWriteByteF(uint8_t data);
 
 
 void MicrowireLatchLMX2531(void);
@@ -80,10 +85,14 @@ void BoardInit(void);
   (uint8_t)((x) >> 8), \
   (uint8_t)((x)))
 
+#define DAC12_WRITE(x)  write_reg_DAC12( \
+  (uint8_t)((x) >> 8), \
+  (uint8_t)((x)))
+
 
 void write_reg_LMX2531(uint8_t f1, uint8_t f2, uint8_t f3);
 void write_reg_LMK0X0XX(uint8_t f1, uint8_t f2, uint8_t f3, uint8_t f4);
-
+void write_reg_DAC12(uint8_t f1, uint8_t f2);
 
 #define LedInit()          INFOLED_DDR |=  (1 << INFOLED)
 #define LedSet()           INFOLED_PORT |= (1 << INFOLED)
@@ -99,6 +108,10 @@ void write_reg_LMK0X0XX(uint8_t f1, uint8_t f2, uint8_t f3, uint8_t f4);
 #define LmkGoeSet()        LMK_CE_PORT |= (1 << LMK_GOE)
 #define LmkGoeClear()      LMK_CE_PORT &= ~(1 << LMK_GOE)
 
+
+#define DacSyncInit()      DAC_SYNC_DDR |= (1 << DAC_SYNC)
+#define DacSyncSet()       DAC_SYNC_PORT |= (1 << DAC_SYNC)
+#define DacSyncClear()     DAC_SYNC_PORT &= ~(1 << DAC_SYNC)
 
 
 #endif //_TAMER_BOARD_H_

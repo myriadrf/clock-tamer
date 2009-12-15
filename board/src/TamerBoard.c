@@ -110,3 +110,37 @@ void MicrowireWriteByte(uint8_t data)
    MW_PORT &=  ~(1 << MW_DATA);
    MW_PORT &=  ~(1 << MW_CLK);
 }
+
+
+void MicrowireWriteByteF(uint8_t data)
+{
+   uint8_t i;
+
+   MW_PORT &=  ~(1 << MW_CLK);
+
+   for (i = 8; i != 0; i--)
+   {
+      MW_PORT |=  (1 << MW_CLK);  //Toggle CLK high
+
+      // Use this because of perfomance impact on an embedded device
+      if ((data & 0x80) != 0)
+         MW_PORT |=  (1 << MW_DATA);   //Set DATA bit
+      else
+         MW_PORT &=  ~(1 << MW_DATA);  //Reset DATA bit
+
+      data <<= 1;
+
+      MW_PORT &=  ~(1 << MW_CLK);  //Toggle CLK low
+   }
+
+   MW_PORT &=  ~(1 << MW_DATA);
+}
+
+
+void write_reg_DAC12(uint8_t f1, uint8_t f2)
+{
+        DacSyncClear();
+        MicrowireWriteByteF(f1);
+        MicrowireWriteByteF(f2);
+        DacSyncSet();
+}

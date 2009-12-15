@@ -28,7 +28,7 @@
 #include <util/delay.h>
 #include <avr/eeprom.h>
 
-
+//#define PRESENT_DAC12
 //#define DEBUG_REGS
 
 extern TamerCommand_t command;
@@ -195,6 +195,9 @@ uint16_t VCO_Kbit = DEF_VCO_Kbit;
 uint8_t LMK_OutMask = 1 << 6;
 uint8_t LMK_devider;
 uint8_t AutoFreq;
+#ifdef PRESENT_DAC12
+uint16_t DacValue;
+#endif
 
 #ifdef DEBUG_REGS
 uint32_t tmp_r0;
@@ -206,11 +209,13 @@ uint32_t tmp_lmk;
 
 uint32_t eeFosc         EEMEM = DEF_Fosc;
 uint32_t eeFout         EEMEM = DEF_Fout;
-uint16_t eeVCO_MIN      EEMEM =  DEF_VCO_MIN;
-uint16_t eeVCO_MAX      EEMEM =  DEF_VCO_MAX;
+uint16_t eeVCO_MIN      EEMEM = DEF_VCO_MIN;
+uint16_t eeVCO_MAX      EEMEM = DEF_VCO_MAX;
 uint16_t eeVCO_Kbit     EEMEM = DEF_VCO_Kbit;
 uint8_t  eeLMK_OutMask  EEMEM = 1 << 6;
 uint8_t  eeAutoFreq     EEMEM = 1;
+
+uint16_t eeDacValue     EEMEM = 2048;
 
 void LoadEEPROM(void)
 {
@@ -223,6 +228,10 @@ void LoadEEPROM(void)
 
     LMK_OutMask = eeprom_read_byte(&eeLMK_OutMask);
     AutoFreq = eeprom_read_byte(&eeAutoFreq);
+
+#ifdef PRESENT_DAC12
+    DacValue = eeprom_read_word(&eeDacValue);
+#endif
 }
 
 void StoreEEPROM(void)
@@ -236,6 +245,11 @@ void StoreEEPROM(void)
 
     eeprom_write_byte(&eeLMK_OutMask, LMK_OutMask);
     eeprom_write_byte(&eeAutoFreq, AutoFreq);
+
+#ifdef PRESENT_DAC12
+    eeprom_write_byte(&eeDacValue, DacValue);
+#endif
+
 }
 
 
@@ -428,6 +442,11 @@ void SetLMK(void)
 
 void AutoStartControl(void)
 {
+#ifdef PRESENT_DAC12
+    DacSyncInit();
+    DacSyncSet();
+#endif
+
     AutoFreq = eeprom_read_byte(&eeAutoFreq);
     if (AutoFreq)
     {
@@ -446,6 +465,18 @@ void AutoStartControl(void)
     }
 }
 
+#ifdef PRESENT_DAC12
+uint8_t SetDac(uint16_t value)
+{
+    if (value < 0x1000)
+    {
+        DAC12_WRITE(value);
+        return 1;
+    }
+
+    return 0;
+}
+#endif
 
 void ProcessCommand(void)
 {
@@ -468,11 +499,18 @@ void ProcessCommand(void)
                     write_reg_LMX2531(command.data[2], command.data[1], command.data[0]);
                     FillResultPM(resOk);
                     return;
-
+#ifdef PRESENT_DAC12
                 case trgDAC:
-                    FillResultPM(resNotSupported);
-                    return;
-
+                    switch (command.details)
+                    {
+                        case detD12:
+                            write_reg_DAC12(command.data[1], command.data[0]);
+                            return;
+                        default:
+                            FillResultPM(resErr);
+                            return;
+                    }
+#endif
                 default:
                     FillResultPM(resErr);
             }
@@ -613,6 +651,28 @@ void ProcessCommand(void)
 
                     FillResultPM(resOk);
                     break;
+#ifdef PRESENT_DAC12
+                case trgDAC:
+                    switch (command.details)
+                    {
+                        case detNONE:
+                            break;
+
+                        case detD12:
+                            DacValue = command.u16data[0];
+                            break;
+
+                        default:
+                            FillResultPM(resErr);
+                            return;
+                    }
+
+                    if (SetDac(DacValue))
+                        FillResultPM(resOk);
+                    else
+                        FillResultPM(resBadRange);
+                    return;
+#endif
                 default:
                     FillResultPM(resErr);
                     break;
@@ -648,7 +708,7 @@ void ProcessCommand(void)
                         case detR01:   FillCmd();  FillUint32(tmp_r1);      FillResultNoNewLinePM(newLine); break;
                         case detR02:   FillCmd();  FillUint32(tmp_r2);      FillResultNoNewLinePM(newLine); break;
                         case detR03:   FillCmd();  FillUint32(tmp_r3);      FillResultNoNewLinePM(newLine); break;
-                        case detEN:    FillCmd();  FillUint32(tmp_lmk);      FillResultNoNewLinePM(newLine); break;
+                        case detEN:    FillCmd();  FillUint32(tmp_lmk);     FillResultNoNewLinePM(newLine); break;
 #endif
                         default: break;
                     }
@@ -665,6 +725,10 @@ void ProcessCommand(void)
                     }
                     break;
                 }
+
+#ifdef PRESENT_DAC12
+                case trgDAC:  FillCmd();  FillUint16(DacValue);  FillResultNoNewLinePM(newLine); break;
+#endif
 
                 default:
                   break;
