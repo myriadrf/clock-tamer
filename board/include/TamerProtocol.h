@@ -89,6 +89,11 @@ typedef enum tamerTargetDetails
     detKBIT,
     detDIVIDERS,
     detAUTO,
+
+    detR00,
+    detR01,
+    detR02,
+    detR03,
 } TargetDetails_t;
 
 

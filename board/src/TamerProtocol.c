@@ -79,7 +79,11 @@ uint8_t pDet[]        PROGMEM  = "ENB"
                                  "MAX"
                                  "KBT"
                                  "DIV"
-                                 "AUT";
+                                 "AUT"
+                                 "R00"
+                                 "R01"
+                                 "R02"
+                                 "R03";
 #define DET_COUNT    (sizeof(pDet)  / WORD_SIZE)
 
 

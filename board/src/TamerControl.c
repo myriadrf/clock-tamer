@@ -29,6 +29,8 @@
 #include <avr/eeprom.h>
 
 
+//#define DEBUG_REGS
+
 extern TamerCommand_t command;
 
 
@@ -131,9 +133,22 @@ uint8_t resBadRange[] PROGMEM = "Bad tuning range";
 
 
 
-#define SERG_TAMER
+//#define SERG_TAMER
+#define CLOCK_TAMER
 
-#ifdef SERG_TAMER
+#ifdef CLOCK_TAMER
+
+//#define DEF_Fosc            26000035
+#define DEF_Fosc            20000000
+#define DEF_Fout            52000000
+
+#define DEF_VCO_MIN         1450
+#define DEF_VCO_MAX         1580
+
+// LMX1515E
+#define DEF_VCO_Kbit        2000
+
+#elif defined(SERG_TAMER)
 
 //#define DEF_Fosc            26000035
 #define DEF_Fosc            26000000
@@ -181,14 +196,21 @@ uint8_t LMK_OutMask = 1 << 6;
 uint8_t LMK_devider;
 uint8_t AutoFreq;
 
+#ifdef DEBUG_REGS
+uint32_t tmp_r0;
+uint32_t tmp_r1;
+uint32_t tmp_r2;
+uint32_t tmp_r3;
+uint32_t tmp_lmk;
+#endif
 
-uint32_t eeFosc         EEMEM;
-uint32_t eeFout         EEMEM;
-uint16_t eeVCO_MIN      EEMEM;
-uint16_t eeVCO_MAX      EEMEM;
-uint16_t eeVCO_Kbit     EEMEM;
-uint8_t  eeLMK_OutMask  EEMEM;
-uint8_t  eeAutoFreq     EEMEM;
+uint32_t eeFosc         EEMEM = DEF_Fosc;
+uint32_t eeFout         EEMEM = DEF_Fout;
+uint16_t eeVCO_MIN      EEMEM =  DEF_VCO_MIN;
+uint16_t eeVCO_MAX      EEMEM =  DEF_VCO_MAX;
+uint16_t eeVCO_Kbit     EEMEM = DEF_VCO_Kbit;
+uint8_t  eeLMK_OutMask  EEMEM = 1 << 6;
+uint8_t  eeAutoFreq     EEMEM = 1;
 
 void LoadEEPROM(void)
 {
@@ -257,6 +279,9 @@ void InitLMK(void)
 #define den_bit                 21
 #define den         ((uint32_t)1 << den_bit)
 
+#define DIVIDER_MAX_FREQ        1500
+//#define DIVIDER_MAX_FREQ        1590
+
 uint8_t SetLMX2531(void)
 {
     uint32_t num;
@@ -274,9 +299,9 @@ uint8_t SetLMX2531(void)
 
     uint16_t i;
 
-    if (VCO_MAX > 1550)
+    if (VCO_MAX > DIVIDER_MAX_FREQ)
     {
-        i = ((10*(VCO_MIN + VCO_MAX) / 8) / (foutmhz)) * 4;
+        i = (((uint16_t)10*(VCO_MIN + VCO_MAX) / 8) / (foutmhz)) * 4;
         vco = (i + 4) * (foutmhz);
         if (vco > 10*VCO_MAX)
             vco = i * (foutmhz);
@@ -285,7 +310,7 @@ uint8_t SetLMX2531(void)
     }
     else
     {
-      i = ((10*(VCO_MIN + VCO_MAX) / 4) / (foutmhz)) * 2;
+      i = (((uint16_t)10*(VCO_MIN + VCO_MAX) / 4) / (foutmhz)) * 2;
       vco = (i + 2) * (foutmhz);
       if (vco > 10*VCO_MAX)
           vco = i * (foutmhz);
@@ -293,13 +318,17 @@ uint8_t SetLMX2531(void)
           i+=2;
     }
     if (vco < 10*VCO_MIN)
+    {
         return 0;
-
+    }
 
 
     uint16_t n = (uint32_t)(i*Fout) / (Fosc / r);
     uint32_t rem_n = ((uint32_t)(i*Fout))  % (Fosc / r);
 
+
+    //tmp_r0 = n;
+    //tmp_r1 = rem_n;
 
 #ifdef DIV64
     num = ((uint64_t)den * rem_n) / ((Fosc));
@@ -324,7 +353,7 @@ uint8_t SetLMX2531(void)
 #endif
 
 
-    if (VCO_MAX > 1550)
+    if (VCO_MAX > DIVIDER_MAX_FREQ)
         i /= 2;
 
     if (i > 510)
@@ -335,11 +364,17 @@ uint8_t SetLMX2531(void)
     LMX2531_WRITE( MAKE_R6(XTLSEL_MANUAL, VCO_ACI_SEL_M1, 1, R_40, R_10, R_40, R_10, C3_C4_100_100) );
     //LMX2531_WRITE( MAKE_R6(CALC_XTSEL(Fosc/1000000), VCO_ACI_SEL_M1, 1, R_40, R_10, R_40, R_10, C3_C4_100_100) );
     LMX2531_WRITE( MAKE_R4(ICP_1X, TOC_DISABLED) );
-    LMX2531_WRITE( MAKE_R3((VCO_MAX > 1550), FDM_FRACTIONAL, DITHER_STRONG, FRAC_ORDER_4, FOLD_DISABLED, den >> 12) );
+#ifdef DEBUG_REGS
+    LMX2531_WRITE(tmp_r3 = MAKE_R3((VCO_MAX > DIVIDER_MAX_FREQ), FDM_FRACTIONAL, DITHER_STRONG, FRAC_ORDER_4, FOLD_DISABLED, den >> 12) );
+    LMX2531_WRITE(tmp_r2 = MAKE_R2(den & 0xFFF, r) );
+    LMX2531_WRITE(tmp_r1 = MAKE_R1(ICP_1X, n >> 8, num >> 12) );
+    LMX2531_WRITE(tmp_r0 = MAKE_R0(n & 0xFF, num & 0xFFF) );
+#else
+    LMX2531_WRITE( MAKE_R3((VCO_MAX > DIVIDER_MAX_FREQ), FDM_FRACTIONAL, DITHER_STRONG, FRAC_ORDER_4, FOLD_DISABLED, den >> 12) );
     LMX2531_WRITE( MAKE_R2(den & 0xFFF, r) );
     LMX2531_WRITE( MAKE_R1(ICP_1X, n >> 8, num >> 12) );
     LMX2531_WRITE( MAKE_R0(n & 0xFF, num & 0xFFF) );
-
+#endif
 
     LMK_devider = i/2;
 
@@ -368,7 +403,11 @@ void SetLMK(void)
    LMK0X0XX_WRITE(0x00000105);
    //LMK0X0XX_WRITE(0x00030AF6);
    //LMK0X0XX_WRITE(0x00030806);
+#ifdef DEBUG_REGS
+   LMK0X0XX_WRITE(tmp_lmk = MAKE_LMK(1, 1, LMK_devider, 0, 6));
+#else
    LMK0X0XX_WRITE(MAKE_LMK(1, 1, LMK_devider, 0, 6));
+#endif
 
    LMK0X0XX_WRITE(0x00000107);
    LMK0X0XX_WRITE(0x00022A09);
@@ -604,6 +643,13 @@ void ProcessCommand(void)
                         case detMIN:   FillCmd();  FillUint16(VCO_MIN);   FillResultNoNewLinePM(newLine); break;
                         case detMAX:   FillCmd();  FillUint16(VCO_MAX);   FillResultNoNewLinePM(newLine); break;
                         case detKBIT:  FillCmd();  FillUint16(VCO_Kbit);  FillResultNoNewLinePM(newLine); break;
+#ifdef DEBUG_REGS
+                        case detR00:   FillCmd();  FillUint32(tmp_r0);      FillResultNoNewLinePM(newLine); break;
+                        case detR01:   FillCmd();  FillUint32(tmp_r1);      FillResultNoNewLinePM(newLine); break;
+                        case detR02:   FillCmd();  FillUint32(tmp_r2);      FillResultNoNewLinePM(newLine); break;
+                        case detR03:   FillCmd();  FillUint32(tmp_r3);      FillResultNoNewLinePM(newLine); break;
+                        case detEN:    FillCmd();  FillUint32(tmp_lmk);      FillResultNoNewLinePM(newLine); break;
+#endif
                         default: break;
                     }
                     break;

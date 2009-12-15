@@ -487,7 +487,10 @@ ALL_ASFLAGS = -mmcu=$(MCU) -I. -x assembler-with-cpp $(ASFLAGS)
 all: begin gccversion sizebefore build checkinvalidevents showliboptions showtarget sizeafter end
 
 avreal:
-	sudo /home/serg/avreal/avreal64-1.27r3 -ab -p/dev/parport0 -o300kHz  +90usb162 -e -w Tamer.hex
+	sudo /home/serg/avreal/avreal64-1.27r3 -ab -p/dev/parport0 -o300kHz  +90usb162 -e -w Tamer.hex -v
+
+avreal-fuse:
+	sudo /home/serg/avreal/avreal64-1.27r3 -ab -p/dev/parport0 -o300kHz  +90usb162 -fBOOTRST=0 -w
 
 # Change the build target to build a HEX file or a library.
 build: elf hex eep lss sym
