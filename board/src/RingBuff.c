@@ -27,7 +27,9 @@
   arising out of or in connection with the use or performance of
   this software.
 */
-
+#ifdef _HOST_
+#include <stdint.h>
+#endif
 #include "RingBuff.h"
 
 void Buffer_Initialize(RingBuff_t* Buffer)

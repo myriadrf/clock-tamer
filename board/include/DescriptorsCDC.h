@@ -56,7 +56,8 @@
 		#define CDC_NOTIFICATION_EPSIZE        8
 
 		/** Size in bytes of the CDC data IN and OUT endpoints. */
-		#define CDC_TXRX_EPSIZE                16
+		//#define CDC_TXRX_EPSIZE                16
+        #define CDC_TXRX_EPSIZE                8
 
 
 #if (!defined(FIXED_CONTROL_ENDPOINT_SIZE))

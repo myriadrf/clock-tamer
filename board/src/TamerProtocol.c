@@ -66,7 +66,9 @@ uint8_t pTrg[]        PROGMEM  = "LMK"
                                  "LMX"
                                  "DAC"
                                  "LED"
-                                 "VCO";
+                                 "VCO"
+                                 "GPS";
+
 #define TRG_COUNT    (sizeof(pTrg)  / WORD_SIZE)
 
 uint8_t pDet[]        PROGMEM  = "ENB"

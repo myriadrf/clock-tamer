@@ -72,6 +72,7 @@ typedef enum tamerTargetType
     trgDAC,
     trgLED,
     trgVCO,
+    trgGPS,
 
 } TargetType_t;
 

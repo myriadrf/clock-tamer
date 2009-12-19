@@ -30,10 +30,10 @@
 
 /* Buffer Configuration: */
    /* Buffer length - select static size of created ring buffers: */
-	 #define BUFF_STATICSIZE 48      // Set to the static ring buffer size for all ring buffers (place size after define)
+	 #define BUFF_STATICSIZE 40      // Set to the static ring buffer size for all ring buffers (place size after define)
 
    /* Volatile mode - uncomment to make buffers volatile, for use in ISRs, etc: */
-	 #define BUFF_VOLATILE            // Uncomment to cause all ring buffers to become volatile (and atomic if multi-byte) in access
+	 //#define BUFF_VOLATILE            // Uncomment to cause all ring buffers to become volatile (and atomic if multi-byte) in access
 
    /* Drop mode - select behaviour when Buffer_StoreElement called on a full buffer: */
      #define BUFF_DROPOLD             // Uncomment to cause full ring buffers to drop the oldest character to make space when full
@@ -54,12 +54,14 @@
 #define _RINGBUFF_H_
 
 	/* Includes: */
+#ifndef _HOST_
 	#include <avr/io.h>
 	#include <avr/interrupt.h>
 	#include <util/atomic.h>
 	#include <limits.h>
 
 	#include <LUFA/Common/Common.h>
+#endif
 
 	/* Defines and checks: */
 	#if defined(BUFF_STATICSIZE)

@@ -30,6 +30,7 @@
 
 //#define PRESENT_DAC12
 //#define DEBUG_REGS
+//#define PRESENT_GPS
 
 extern TamerCommand_t command;
 
@@ -85,7 +86,7 @@ void FillCmd(void)
     Buffer_StoreElement(&USARTtoUSB_Buffer, ',');
 }
 
-static void FillUint32(uint32_t val)
+void FillUint32(uint32_t val)
 {
     uint32_t stv = 1000000000;
     uint8_t f = 0;
@@ -93,7 +94,7 @@ static void FillUint32(uint32_t val)
     for (;stv > 0; stv/=10)
     {
         uint8_t v = val / stv;
-        if ((f) || (v > 0))
+       // if ((f) || (v > 0))
         {
             f = 1;
             Buffer_StoreElement(&USARTtoUSB_Buffer, '0' + v);
@@ -104,7 +105,8 @@ static void FillUint32(uint32_t val)
         Buffer_StoreElement(&USARTtoUSB_Buffer, '0');
 }
 
-static void FillUint16(uint16_t val)
+#ifdef FILL_UINT16
+void FillUint16(uint16_t val)
 {
     uint16_t stv = 10000;
     uint8_t f = 0;
@@ -112,7 +114,7 @@ static void FillUint16(uint16_t val)
     for (;stv > 0; stv/=10)
     {
         uint8_t v = val / stv;
-        if ((f) || (v > 0))
+        //if ((f) || (v > 0))
         {
             f = 1;
             Buffer_StoreElement(&USARTtoUSB_Buffer, '0' + v);
@@ -122,10 +124,12 @@ static void FillUint16(uint16_t val)
     if (f == 0)
         Buffer_StoreElement(&USARTtoUSB_Buffer, '0');
 }
+#else
+#define FillUint16(x)   FillUint32(x)
+#endif
 
 
 uint8_t resOk[] PROGMEM = "OK";
-uint8_t resNotSupported[] PROGMEM = "NOT SUPPORTED YET";
 uint8_t resErr[] PROGMEM = "ERROR";
 
 uint8_t resVersion[] PROGMEM = "ClockTamer V1.0 [beta]";
@@ -199,6 +203,24 @@ uint8_t AutoFreq;
 uint16_t DacValue;
 #endif
 
+#ifdef PRESENT_GPS
+uint8_t GpsSync_divider = 1;  // DIV
+uint8_t PPS_skipped;       //KBT
+
+uint32_t CounterHHValue;  //R00
+
+uint16_t Count1PPS;       //R01
+
+uint32_t LastOCPVal;      //R02
+
+uint32_t FilteredVal;     //R03
+
+uint32_t ddd;
+#endif
+
+#define GPSSYNC_MAX_FREQ        3000000
+
+
 #ifdef DEBUG_REGS
 uint32_t tmp_r0;
 uint32_t tmp_r1;
@@ -252,6 +274,90 @@ void StoreEEPROM(void)
 
 }
 
+#ifdef PRESENT_GPS
+
+void InitCounters(void)
+{
+    //External T1 Source
+    TCCR1B = (1 << ICES1) | (1 << CS12) | (1 << CS11) | (1 << CS10);
+
+    //Enable input capture interrupt
+    TIMSK1 = (1 << ICIE1) | (1 << TOIE1);
+}
+
+#define FILTER_EXP_ALPHA        32
+
+
+ISR(TIMER1_CAPT_vect, ISR_BLOCK)
+{
+    //TODO Impove this code!!!
+    // Situation when counter overflows inside this inturrupt isn't covered
+
+    if (Count1PPS % GpsSync_divider == 0)
+    {
+        uint32_t prev = LastOCPVal;
+
+        LastOCPVal = ICR1;
+        LastOCPVal |= (CounterHHValue << 16);
+        if (TIFR1 & (1<< TOV1))
+            LastOCPVal += 0x010000;
+
+        uint32_t delta =  (LastOCPVal - prev);
+        int32_t pint = (FilteredVal/FILTER_EXP_ALPHA - delta);
+        if (pint < 0)
+            pint = -pint;
+
+        if ((Count1PPS != 0))
+        {
+            if ((FilteredVal == 0) || (PPS_skipped > 5))
+            {
+                PPS_skipped = 0;
+                FilteredVal = FILTER_EXP_ALPHA*(delta);
+            }
+            else if ((uint32_t)pint < delta / 65536)
+            {
+                FilteredVal = (FILTER_EXP_ALPHA-1)*(FilteredVal/FILTER_EXP_ALPHA) + (delta);
+
+                PPS_skipped = 0;
+            }
+            else
+                PPS_skipped++;
+
+            ddd = pint;
+        }
+        else
+        {
+            PPS_skipped++;
+        }
+    }
+
+    Count1PPS++;
+}
+
+ISR(TIMER1_OVF_vect, ISR_BLOCK)
+{
+
+    CounterHHValue++;
+}
+
+void UpdateOSCValue(void)
+{
+    int32_t delta = (int)(FilteredVal/FILTER_EXP_ALPHA) - (int)Fout ;
+
+    uint32_t pdelta = (delta > 0) ? delta : -delta;
+    if (pdelta < Fout / 4096)
+    {
+        uint32_t m = 0x7FFFFFFF / Fosc;
+        if (pdelta > m)
+        {
+            delta = (delta > 0) ? m : -m;
+        }
+
+        Fosc = (uint32_t)((int32_t)Fosc + (delta*(int32_t)Fosc) / (int32_t)Fout);
+    }
+}
+
+#endif
 
 void InitLMX2531(void)
 {
@@ -296,7 +402,8 @@ void InitLMK(void)
 #define DIVIDER_MAX_FREQ        1500
 //#define DIVIDER_MAX_FREQ        1590
 
-uint8_t SetLMX2531(void)
+
+uint8_t SetLMX2531(uint8_t tuneOnly)
 {
     uint32_t num;
 
@@ -373,24 +480,38 @@ uint8_t SetLMX2531(void)
     if (i > 510)
         return 0;
 
-    LMX2531_WRITE( MAKE_R8(LOCKMODE_LINEAR, Fosc/1000) );
-    LMX2531_WRITE( MAKE_R7(VCO_Kbit, Fosc/1000) );
-    LMX2531_WRITE( MAKE_R6(XTLSEL_MANUAL, VCO_ACI_SEL_M1, 1, R_40, R_10, R_40, R_10, C3_C4_100_100) );
-    //LMX2531_WRITE( MAKE_R6(CALC_XTSEL(Fosc/1000000), VCO_ACI_SEL_M1, 1, R_40, R_10, R_40, R_10, C3_C4_100_100) );
-    LMX2531_WRITE( MAKE_R4(ICP_1X, TOC_DISABLED) );
+    if (!tuneOnly)
+    {
+        LMX2531_WRITE( MAKE_R8(LOCKMODE_LINEAR, Fosc/1000) );
+        LMX2531_WRITE( MAKE_R7(VCO_Kbit, Fosc/1000) );
+        LMX2531_WRITE( MAKE_R6(XTLSEL_MANUAL, VCO_ACI_SEL_M1, 1, R_40, R_10, R_40, R_10, C3_C4_100_100) );
+        //LMX2531_WRITE( MAKE_R6(CALC_XTSEL(Fosc/1000000), VCO_ACI_SEL_M1, 1, R_40, R_10, R_40, R_10, C3_C4_100_100) );
+        LMX2531_WRITE( MAKE_R4(ICP_1X, TOC_DISABLED) );
 #ifdef DEBUG_REGS
-    LMX2531_WRITE(tmp_r3 = MAKE_R3((VCO_MAX > DIVIDER_MAX_FREQ), FDM_FRACTIONAL, DITHER_STRONG, FRAC_ORDER_4, FOLD_DISABLED, den >> 12) );
-    LMX2531_WRITE(tmp_r2 = MAKE_R2(den & 0xFFF, r) );
+        LMX2531_WRITE(tmp_r3 = MAKE_R3((VCO_MAX > DIVIDER_MAX_FREQ), FDM_FRACTIONAL, DITHER_STRONG, FRAC_ORDER_4, FOLD_DISABLED, den >> 12) );
+        LMX2531_WRITE(tmp_r2 = MAKE_R2(den & 0xFFF, r) );
+    }
     LMX2531_WRITE(tmp_r1 = MAKE_R1(ICP_1X, n >> 8, num >> 12) );
     LMX2531_WRITE(tmp_r0 = MAKE_R0(n & 0xFF, num & 0xFFF) );
 #else
-    LMX2531_WRITE( MAKE_R3((VCO_MAX > DIVIDER_MAX_FREQ), FDM_FRACTIONAL, DITHER_STRONG, FRAC_ORDER_4, FOLD_DISABLED, den >> 12) );
-    LMX2531_WRITE( MAKE_R2(den & 0xFFF, r) );
+        LMX2531_WRITE( MAKE_R3((VCO_MAX > DIVIDER_MAX_FREQ), FDM_FRACTIONAL, DITHER_STRONG, FRAC_ORDER_4, FOLD_DISABLED, den >> 12) );
+        LMX2531_WRITE( MAKE_R2(den & 0xFFF, r) );
+    }
     LMX2531_WRITE( MAKE_R1(ICP_1X, n >> 8, num >> 12) );
     LMX2531_WRITE( MAKE_R0(n & 0xFF, num & 0xFFF) );
 #endif
 
     LMK_devider = i/2;
+
+#ifdef PRESENT_GPS
+    GpsSync_divider = Fout / GPSSYNC_MAX_FREQ;
+    if (GpsSync_divider < 0)
+        GpsSync_divider = 1;
+
+    uint16_t tmp = GpsSync_divider * LMK_devider;
+    if (tmp > 255)
+        return 0;
+#endif
 
     return 1;
 }
@@ -423,6 +544,10 @@ void SetLMK(void)
    LMK0X0XX_WRITE(MAKE_LMK(1, 1, LMK_devider, 0, 6));
 #endif
 
+#ifdef PRESENT_GPS
+   LMK0X0XX_WRITE(MAKE_LMK(1, 1, GpsSync_divider * LMK_devider, 0, 4));
+#endif
+
    LMK0X0XX_WRITE(0x00000107);
    LMK0X0XX_WRITE(0x00022A09);
    LMK0X0XX_WRITE(0x6800000E);
@@ -447,6 +572,10 @@ void AutoStartControl(void)
     DacSyncSet();
 #endif
 
+#ifdef PRESENT_GPS
+    InitCounters();
+#endif
+
     AutoFreq = eeprom_read_byte(&eeAutoFreq);
     if (AutoFreq)
     {
@@ -458,7 +587,7 @@ void AutoStartControl(void)
 
         _delay_ms(50);
 
-        if (SetLMX2531())
+        if (SetLMX2531(0))
         {
             SetLMK();
         }
@@ -602,7 +731,7 @@ void ProcessCommand(void)
                             return;
                     }
 
-                    uint8_t r = SetLMX2531();
+                    uint8_t r = SetLMX2531(0);
                     if (r)
                     {
                         SetLMK();
@@ -673,6 +802,23 @@ void ProcessCommand(void)
                         FillResultPM(resBadRange);
                     return;
 #endif
+
+#ifdef PRESENT_GPS
+                case trgGPS:
+                {
+                    switch (command.details)
+                    {
+                        case detSYN:    UpdateOSCValue(); break;
+
+                        default:
+                            FillResultPM(resErr);
+                            return;
+                    }
+
+                    FillResultPM(resOk);
+                    return;
+                }
+#endif
                 default:
                     FillResultPM(resErr);
                     break;
@@ -684,6 +830,24 @@ void ProcessCommand(void)
         {
             switch (command.type)
             {
+#ifdef PRESENT_GPS
+                case trgGPS:
+                {
+                    switch (command.details)
+                    {
+                        case detDIVIDERS: FillCmd();  FillUint16(GpsSync_divider);  FillResultNoNewLinePM(newLine); break;
+                        case detKBIT:     FillCmd();  FillUint16(PPS_skipped);      FillResultNoNewLinePM(newLine); break;
+                        case detR00:      FillCmd();  FillUint32(CounterHHValue);   FillResultNoNewLinePM(newLine); break;
+                        case detR01:      FillCmd();  FillUint16(Count1PPS);        FillResultNoNewLinePM(newLine); break;
+                        case detR02:      FillCmd();  FillUint32(LastOCPVal);       FillResultNoNewLinePM(newLine); break;
+                        case detR03:      FillCmd();  FillUint32(FilteredVal);      FillResultNoNewLinePM(newLine); break;
+                        case detMAX:      FillCmd();  FillUint32(ddd);              FillResultNoNewLinePM(newLine); break;
+                        default: break;
+                    }
+
+                    break;
+                }
+#endif
                 case trgNONE:
                 {
                     switch (command.details)
