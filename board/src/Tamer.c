@@ -69,6 +69,7 @@ USB_ClassInfo_CDC_Device_t VirtualSerial_CDC_Interface =
 /** Main program entry point. This routine contains the overall program flow, including initial
  *  setup of all components and the main program loop.
  */
+void TamerControlAux(void);
 void FillUint16(uint16_t val);
 
 void FillResultPM(uint8_t* res);
@@ -172,6 +173,7 @@ nxt:
             }
         }
 
+        TamerControlAux();
 		
 		/* Load bytes from the USART transmit buffer into the USART */
 		//if (USBtoUSART_Buffer.Elements)

@@ -32,6 +32,9 @@
 //#define DEBUG_REGS
 //#define PRESENT_GPS
 
+
+uint8_t SetLMX2531(uint8_t tuneOnly);
+
 extern TamerCommand_t command;
 
 
@@ -132,7 +135,7 @@ void FillUint16(uint16_t val)
 uint8_t resOk[] PROGMEM = "OK";
 uint8_t resErr[] PROGMEM = "ERROR";
 
-uint8_t resVersion[] PROGMEM = "ClockTamer V1.0 [beta]";
+uint8_t resVersion[] PROGMEM = "ClockTamer HW-1.0 API-1";
 uint8_t resBadRange[] PROGMEM = "Bad tuning range";
 
 
@@ -215,7 +218,11 @@ uint32_t LastOCPVal;      //R02
 
 uint32_t FilteredVal;     //R03
 
-uint32_t ddd;
+uint32_t ddd;             //MAX
+
+uint8_t AutoUpdateGps;    //AUT
+
+uint32_t LastAutoUpd;     //MIN
 #endif
 
 #define GPSSYNC_MAX_FREQ        3000000
@@ -239,6 +246,8 @@ uint8_t  eeAutoFreq     EEMEM = 1;
 
 uint16_t eeDacValue     EEMEM = 2048;
 
+uint8_t  eeAutoGPSSync  EEMEM = 1;
+
 void LoadEEPROM(void)
 {
     Fosc = eeprom_read_dword(&eeFosc);
@@ -253,6 +262,10 @@ void LoadEEPROM(void)
 
 #ifdef PRESENT_DAC12
     DacValue = eeprom_read_word(&eeDacValue);
+#endif
+
+#ifdef PRESENT_GPS
+    AutoUpdateGps = eeprom_read_byte(&eeAutoGPSSync);
 #endif
 }
 
@@ -272,6 +285,9 @@ void StoreEEPROM(void)
     eeprom_write_byte(&eeDacValue, DacValue);
 #endif
 
+#ifdef PRESENT_GPS
+    eeprom_write_byte(&eeAutoGPSSync, AutoUpdateGps);
+#endif
 }
 
 #ifdef PRESENT_GPS
@@ -316,6 +332,7 @@ ISR(TIMER1_CAPT_vect, ISR_BLOCK)
             }
             else if ((uint32_t)pint < delta / 65536)
             {
+                // TODO Impove this calculation
                 FilteredVal = (FILTER_EXP_ALPHA-1)*(FilteredVal/FILTER_EXP_ALPHA) + (delta);
 
                 PPS_skipped = 0;
@@ -357,7 +374,37 @@ void UpdateOSCValue(void)
     }
 }
 
+void TrimClock(void)
+{
+    //TODO Add atomic read for CounterHHValue
+
+    // Check the mesuarements are stable
+    if ((CounterHHValue - LastAutoUpd > 500) && (Count1PPS > 80) && (ddd < 60))
+    {
+        int32_t delta = (int)(FilteredVal/FILTER_EXP_ALPHA) - (int)Fout ;
+        uint32_t pdelta = (delta > 0) ? delta : -delta;
+        if (pdelta > 10)
+        {
+            UpdateOSCValue();
+
+            LastAutoUpd = CounterHHValue;
+
+            SetLMX2531(1);
+        }
+
+    }
+
+}
+
 #endif
+
+void TamerControlAux(void)
+{
+#ifdef PRESENT_GPS
+    if (AutoUpdateGps)
+        TrimClock();
+#endif
+}
 
 void InitLMX2531(void)
 {
@@ -809,7 +856,7 @@ void ProcessCommand(void)
                     switch (command.details)
                     {
                         case detSYN:    UpdateOSCValue(); break;
-
+                        case detAUTO:   AutoUpdateGps = command.data[0]; break;
                         default:
                             FillResultPM(resErr);
                             return;
@@ -842,6 +889,8 @@ void ProcessCommand(void)
                         case detR02:      FillCmd();  FillUint32(LastOCPVal);       FillResultNoNewLinePM(newLine); break;
                         case detR03:      FillCmd();  FillUint32(FilteredVal);      FillResultNoNewLinePM(newLine); break;
                         case detMAX:      FillCmd();  FillUint32(ddd);              FillResultNoNewLinePM(newLine); break;
+                        case detAUTO:     FillCmd();  FillUint16(AutoUpdateGps);    FillResultNoNewLinePM(newLine); break;
+                        case detMIN:      FillCmd();  FillUint32(LastAutoUpd);      FillResultNoNewLinePM(newLine); break;
                         default: break;
                     }
 
