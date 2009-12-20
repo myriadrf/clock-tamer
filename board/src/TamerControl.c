@@ -379,11 +379,11 @@ void TrimClock(void)
     //TODO Add atomic read for CounterHHValue
 
     // Check the mesuarements are stable
-    if ((CounterHHValue - LastAutoUpd > 500) && (Count1PPS > 80) && (ddd < 60))
+    if ((CounterHHValue - LastAutoUpd > 500) && (Count1PPS > 80) && (ddd < 31))
     {
         int32_t delta = (int)(FilteredVal/FILTER_EXP_ALPHA) - (int)Fout ;
         uint32_t pdelta = (delta > 0) ? delta : -delta;
-        if (pdelta > 10)
+        if (pdelta > 4)
         {
             UpdateOSCValue();
 
