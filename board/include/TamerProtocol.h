@@ -52,16 +52,16 @@ NFO
 typedef enum tamerCommandType
 {
     cmdIDLE = 0,
-    cmdREG,
+    cmdREGISTER,
     cmdPIN,
     cmdSET,
     cmdSAVE,
     cmdDEFAULTS,
     cmdINFO,
     cmdVERSION,
-    cmdRST,
-    cmdLDE,
-    cmdSTE,
+    cmdRESET,
+    cmdLOAD_EEPROM,
+    cmdSTORE_EEPROM,
 } CommandType_t;
 
 typedef enum tamerTargetType

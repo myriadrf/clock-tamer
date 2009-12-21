@@ -661,7 +661,7 @@ void ProcessCommand(void)
         case cmdIDLE:
             return;
 
-        case cmdREG:
+        case cmdREGISTER:
         {
 
             switch (command.type)
@@ -951,7 +951,7 @@ void ProcessCommand(void)
             break;
         }
 
-        case cmdRST:
+        case cmdRESET:
         {
             InitLMX2531();
             InitLMK();
@@ -963,12 +963,12 @@ void ProcessCommand(void)
             FillResultPM(resVersion);
             break;
 
-        case cmdLDE:
+        case cmdLOAD_EEPROM:
             LoadEEPROM();
             FillResultPM(resOk);
             break;
 
-        case cmdSTE:
+        case cmdSTORE_EEPROM:
             StoreEEPROM();
             FillResultPM(resOk);
             break;
