@@ -225,7 +225,7 @@ CPPDEFS = -DF_CPU=$(F_CPU)UL
 #  -Wall...:     warning level
 #  -Wa,...:      tell GCC to pass this to the assembler.
 #    -adhlns...: create assembler listing
-CFLAGS = -g$(DEBUG)
+CFLAGS += -g$(DEBUG)
 CFLAGS += $(CDEFS)
 CFLAGS += -O$(OPT)
 CFLAGS += -funsigned-char
@@ -693,7 +693,7 @@ extcoff: $(TARGET).elf
 $(OBJDIR)/%.o : %.c
 	@echo
 	@echo $(MSG_COMPILING) $<
-	mkdir -p $(OBJDIR)/$<
+	@mkdir -p `dirname $(OBJDIR)/$<`
 	$(CC) -c $(ALL_CFLAGS) $< -o $@ 
 
 
