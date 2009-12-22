@@ -73,12 +73,12 @@ void TamerControlAux(void);
 void FillUint16(uint16_t val);
 
 void FillResultPM(uint8_t* res);
-void ProcessCommand(void);
+uint8_t ProcessCommand(void);
 
 void AutoStartControl(void);
 
 uint8_t resSyntax[] PROGMEM = "SYNTAX ERROR";
-uint8_t resN[] PROGMEM = "\n";
+uint8_t resErr[] PROGMEM = "CMD ERROR";
 
 int main(void)
 {
@@ -93,7 +93,6 @@ int main(void)
 
     //CDC_Device_CreateStream(&VirtualSerial_CDC_Interface, &USBSerialStream);
 
-    uint16_t lastWait = 0;
     uint8_t commands = 0;
 	for (;;)
 	{
@@ -108,18 +107,15 @@ int main(void)
             if ((byte != 0) && (byte != 0xff))
                 Buffer_StoreElement(&USBtoUSART_Buffer, byte);
 
+
+			// Uncomment this to enable echo on console
+            // CDC_Device_SendByte(&VirtualSerial_CDC_Interface, byte);
+
             if (byte == '\n' || byte == '\r')
             {
                 commands++;
                 break;
             }
-            //else if (byte != 0);
-            //    Buffer_StoreElement(&USARTtoUSB_Buffer, byte);
-
-			
-
-            //CDC_Device_SendByte(&VirtualSerial_CDC_Interface, byte);
-            //bytes++;
 		}
 
 
@@ -132,7 +128,11 @@ int main(void)
             uint8_t res = ParseCommand();
             if (res)
             {
-                ProcessCommand();
+                res = ProcessCommand();
+				if (res == 0)
+				{
+					FillResultPM(resErr);
+				}
             }
             else
             {
@@ -140,45 +140,11 @@ int main(void)
             }
         }
 
-nxt:
-        //  CDC_Device_SendByte(&VirtualSerial_CDC_Interface, a);
 
 		/* Read bytes from the USART receive buffer into the USB IN endpoint */
-#if 0
 		while (USARTtoUSB_Buffer.Elements)
 			CDC_Device_SendByte(&VirtualSerial_CDC_Interface, Buffer_GetElement(&USARTtoUSB_Buffer));
-#endif
 
-#if 1
-		if (USARTtoUSB_Buffer.Elements)
-        {
-            uint8_t m;
-            for (m = 0; (m < 8) && USARTtoUSB_Buffer.Elements; m++)
-            {
-                uint8_t bt;
-                if (lastWait == 0)
-                    bt = Buffer_GetElement(&USARTtoUSB_Buffer);
-                else
-                {
-                    bt = lastWait;
-                    lastWait = 0;
-                }
-
-                uint8_t res = CDC_Device_SendByte(&VirtualSerial_CDC_Interface, bt);
-                if (res != ENDPOINT_READYWAIT_NoError)
-                {
-                    lastWait = 0x100 | bt;
-                    break;
-                }
-            }
-
-            if (m == 8)
-            {
-                CDC_Device_Flush(&VirtualSerial_CDC_Interface);
-                goto nxt;
-            }
-        }
-#endif
         TamerControlAux();
 		
 		/* Load bytes from the USART transmit buffer into the USART */

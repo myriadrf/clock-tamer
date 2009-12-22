@@ -103,7 +103,7 @@ static inline uint8_t ParseParam(uint8_t w1, uint8_t w2, uint8_t w3, uint8_t* ta
         uint8_t o3 = pgm_read_byte(table++);
 
         if ((o1 == 0) /*|| (o2 == 0) || (o3 == 0)*/)
-            return 0;
+            return 0xff;
 
         if ((o1 == w1) && (o2 == w2) && (o3 == w3))
             return i;

@@ -64,12 +64,20 @@ void FillHead(uint8_t* res, uint8_t idx)
 {
     uint8_t byte;
     uint8_t i;
-    res = res + 3*idx;
-    for (i = 0; i < 3; i++)
-    {
-        byte = pgm_read_byte(res++);
-        Buffer_StoreElement(&USARTtoUSB_Buffer, byte);
-    }
+
+	if (idx > 0xf0)
+	{
+		Buffer_StoreElement(&USARTtoUSB_Buffer, '?');
+	}
+	else
+	{
+    	res = res + 3*idx;
+    	for (i = 0; i < 3; i++)
+    	{
+        	byte = pgm_read_byte(res++);
+        	Buffer_StoreElement(&USARTtoUSB_Buffer, byte);
+    	}
+	}
 }
 
 extern uint8_t pCmd[];
@@ -133,7 +141,6 @@ void FillUint16(uint16_t val)
 
 
 uint8_t resOk[] PROGMEM = "OK";
-uint8_t resErr[] PROGMEM = "ERROR";
 
 uint8_t resVersion[] PROGMEM = "ClockTamer HW-1.0 API-1";
 uint8_t resBadRange[] PROGMEM = "Bad tuning range";
@@ -654,12 +661,12 @@ uint8_t SetDac(uint16_t value)
 }
 #endif
 
-void ProcessCommand(void)
+uint8_t ProcessCommand(void)
 {
     switch(command.cmd)
     {
         case cmdIDLE:
-            return;
+            return 1;
 
         case cmdREGISTER:
         {
@@ -683,12 +690,11 @@ void ProcessCommand(void)
                             write_reg_DAC12(command.data[1], command.data[0]);
                             return;
                         default:
-                            FillResultPM(resErr);
-                            return;
+                            return 0;
                     }
 #endif
                 default:
-                    FillResultPM(resErr);
+                    return 0;
             }
             break;
         }
@@ -714,11 +720,10 @@ void ProcessCommand(void)
                                 LmkGoeClear();
                             break;
                         default:
-                            FillResultPM(resErr);
-                            return;
+                            return 0;
                     }
                     FillResultPM(resOk);
-                    return;
+                    return 1;
                 }
                 case trgLMX:
                 {
@@ -731,11 +736,10 @@ void ProcessCommand(void)
                                 LmxCeClear();
                             break;
                         default:
-                            FillResultPM(resErr);
-                            return;
+                            return 0;
                     }
                     FillResultPM(resOk);
-                    return;
+                    return 1;
                 }
 
                 case trgLED:
@@ -746,13 +750,12 @@ void ProcessCommand(void)
                         LedClear();
 
                     FillResultPM(resOk);
-                    break;
+                    return 1;
                 }
                 default:
-                    FillResultPM(resErr);
+                    return 0;
             }
-            break;
-
+         	return 0;
         }
 
         case cmdSET:
@@ -774,8 +777,7 @@ void ProcessCommand(void)
                             AutoFreq = command.data[0];
                             break;
                         default:
-                            FillResultPM(resErr);
-                            return;
+                            return 0;
                     }
 
                     uint8_t r = SetLMX2531(0);
@@ -788,7 +790,7 @@ void ProcessCommand(void)
                     {
                         FillResultPM(resBadRange);
                     }
-                    break;
+                    return 1;
 
                 case trgVCO:
                     switch (command.details)
@@ -804,12 +806,11 @@ void ProcessCommand(void)
                             break;
 
                         default:
-                            FillResultPM(resErr);
-                            return;
+                            return 0;
                     }
 
                     FillResultPM(resOk);
-                    break;
+                    return 1;
 
                 case trgLMK:
                     switch (command.details)
@@ -819,14 +820,13 @@ void ProcessCommand(void)
                             break;
 
                         default:
-                            FillResultPM(resErr);
-                            return;
+                            return 0;
                     }
 
                     SetLMK();
 
                     FillResultPM(resOk);
-                    break;
+                    return 1;
 #ifdef PRESENT_DAC12
                 case trgDAC:
                     switch (command.details)
@@ -839,15 +839,14 @@ void ProcessCommand(void)
                             break;
 
                         default:
-                            FillResultPM(resErr);
-                            return;
+                            return 0;
                     }
 
                     if (SetDac(DacValue))
                         FillResultPM(resOk);
                     else
                         FillResultPM(resBadRange);
-                    return;
+                    return 1;
 #endif
 
 #ifdef PRESENT_GPS
@@ -858,19 +857,17 @@ void ProcessCommand(void)
                         case detSYN:    UpdateOSCValue(); break;
                         case detAUTO:   AutoUpdateGps = command.data[0]; break;
                         default:
-                            FillResultPM(resErr);
-                            return;
+                            return 0;
                     }
 
                     FillResultPM(resOk);
-                    return;
+                    return 1;
                 }
 #endif
                 default:
-                    FillResultPM(resErr);
-                    break;
+                    return 0;
             }
-            break;
+            return 0;
         }
 
         case cmdINFO:
@@ -891,10 +888,10 @@ void ProcessCommand(void)
                         case detMAX:      FillCmd();  FillUint32(ddd);              FillResultNoNewLinePM(newLine); break;
                         case detAUTO:     FillCmd();  FillUint16(AutoUpdateGps);    FillResultNoNewLinePM(newLine); break;
                         case detMIN:      FillCmd();  FillUint32(LastAutoUpd);      FillResultNoNewLinePM(newLine); break;
-                        default: break;
+                        default: return 0;
                     }
 
-                    break;
+                    return 1;
                 }
 #endif
                 case trgNONE:
@@ -904,9 +901,9 @@ void ProcessCommand(void)
                         case detOUT:   FillCmd();  FillUint32(Fout);      FillResultNoNewLinePM(newLine); break;
                         case detOSC:   FillCmd();  FillUint32(Fosc);      FillResultNoNewLinePM(newLine); break;
                         case detAUTO:  FillCmd();  FillUint16(AutoFreq);  FillResultNoNewLinePM(newLine); break;
-                        default: break;
+                        default: return 0;
                     }
-                    break;
+                    return 1;
                 }
 
                 case trgVCO:
@@ -923,9 +920,9 @@ void ProcessCommand(void)
                         case detR03:   FillCmd();  FillUint32(tmp_r3);      FillResultNoNewLinePM(newLine); break;
                         case detEN:    FillCmd();  FillUint32(tmp_lmk);     FillResultNoNewLinePM(newLine); break;
 #endif
-                        default: break;
+                        default: return 0;
                     }
-                    break;
+                    return 1;
                 }
 
                 case trgLMK:
@@ -934,21 +931,20 @@ void ProcessCommand(void)
                     {
                         case detPORTS:    FillCmd();  FillUint16(LMK_OutMask);  FillResultNoNewLinePM(newLine); break;
                         case detDIVIDERS: FillCmd();  FillUint16(LMK_devider);  FillResultNoNewLinePM(newLine); break;
-                        default: break;
+                        default: return 0;
                     }
-                    break;
+                    return 1;
                 }
 
 #ifdef PRESENT_DAC12
-                case trgDAC:  FillCmd();  FillUint16(DacValue);  FillResultNoNewLinePM(newLine); break;
+                case trgDAC:  FillCmd();  FillUint16(DacValue);  FillResultNoNewLinePM(newLine); return 1;
 #endif
 
                 default:
-                  break;
+                  return 0;
             }
 
-            FillResultPM(resOk);
-            break;
+            return 0;
         }
 
         case cmdRESET:
@@ -956,28 +952,26 @@ void ProcessCommand(void)
             InitLMX2531();
             InitLMK();
             FillResultPM(resOk);
-            break;
+            return 1;
         }
 
         case cmdVERSION:
             FillResultPM(resVersion);
-            break;
+            return 1;
 
         case cmdLOAD_EEPROM:
             LoadEEPROM();
             FillResultPM(resOk);
-            break;
+            return 1;
 
         case cmdSTORE_EEPROM:
             StoreEEPROM();
             FillResultPM(resOk);
-            break;
+            return 1;
 
         default:
-            FillResultPM(resErr);
+            return 0;
 
     }
-
-
-
+	return 0;
 }
