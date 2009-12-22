@@ -65,19 +65,19 @@ void FillHead(uint8_t* res, uint8_t idx)
     uint8_t byte;
     uint8_t i;
 
-	if (idx > 0xf0)
-	{
-		Buffer_StoreElement(&USARTtoUSB_Buffer, '?');
-	}
-	else
-	{
-    	res = res + 3*idx;
-    	for (i = 0; i < 3; i++)
-    	{
-        	byte = pgm_read_byte(res++);
-        	Buffer_StoreElement(&USARTtoUSB_Buffer, byte);
-    	}
-	}
+    if (idx > 0xf0)
+    {
+        Buffer_StoreElement(&USARTtoUSB_Buffer, '?');
+    }
+    else
+    {
+        res = res + 3*idx;
+        for (i = 0; i < 3; i++)
+        {
+            byte = pgm_read_byte(res++);
+            Buffer_StoreElement(&USARTtoUSB_Buffer, byte);
+        }
+    }
 }
 
 extern uint8_t pCmd[];
@@ -297,6 +297,8 @@ void StoreEEPROM(void)
 #endif
 }
 
+
+
 #ifdef PRESENT_GPS
 
 void InitCounters(void)
@@ -332,12 +334,12 @@ ISR(TIMER1_CAPT_vect, ISR_BLOCK)
 
         if ((Count1PPS != 0))
         {
-            if ((FilteredVal == 0) || (PPS_skipped > 5))
+            if ((FilteredVal == 0) || (PPS_skipped > 1))
             {
                 PPS_skipped = 0;
                 FilteredVal = FILTER_EXP_ALPHA*(delta);
             }
-            else if ((uint32_t)pint < delta / 65536)
+            else if ((uint32_t)pint < delta / 524288)
             {
                 // TODO Impove this calculation
                 FilteredVal = (FILTER_EXP_ALPHA-1)*(FilteredVal/FILTER_EXP_ALPHA) + (delta);
@@ -371,6 +373,7 @@ void UpdateOSCValue(void)
     uint32_t pdelta = (delta > 0) ? delta : -delta;
     if (pdelta < Fout / 4096)
     {
+        //TODO Make pure div operation instead of this
         uint32_t m = 0x7FFFFFFF / Fosc;
         if (pdelta > m)
         {
@@ -386,11 +389,11 @@ void TrimClock(void)
     //TODO Add atomic read for CounterHHValue
 
     // Check the mesuarements are stable
-    if ((CounterHHValue - LastAutoUpd > 500) && (Count1PPS > 80) && (ddd < 31))
+    if ((CounterHHValue - LastAutoUpd > 500) && (Count1PPS > 80) && (ddd < 31) && (PPS_skipped == 0))
     {
         int32_t delta = (int)(FilteredVal/FILTER_EXP_ALPHA) - (int)Fout ;
         uint32_t pdelta = (delta > 0) ? delta : -delta;
-        if (pdelta > 4)
+        if (pdelta > 2)
         {
             UpdateOSCValue();
 
