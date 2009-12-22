@@ -117,7 +117,7 @@ OBJDIR = obj
 
 
 # Path to the LUFA library
-LUFA_PATH = ./LUFA
+LUFA_PATH = LUFA
 
 
 # LUFA library compile-time options
@@ -693,7 +693,7 @@ extcoff: $(TARGET).elf
 $(OBJDIR)/%.o : %.c
 	@echo
 	@echo $(MSG_COMPILING) $<
-	@mkdir -p $(OBJDIR)/$<
+	mkdir -p $(OBJDIR)/$<
 	$(CC) -c $(ALL_CFLAGS) $< -o $@ 
 
 
@@ -718,7 +718,7 @@ $(OBJDIR)/%.o : %.cpp
 $(OBJDIR)/%.o : %.S
 	@echo
 	@echo $(MSG_ASSEMBLING) $<
-	$(CC) -c $(ALL_ASFLAGS) $< -o $@
+	$(CC) -c $(ALL_ASFLAGS) $< -o "$@"
 
 
 # Create preprocessed source for use in sending a bug report.
