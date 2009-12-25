@@ -634,7 +634,6 @@ uint8_t SetLMX2531(uint8_t tuneOnly)
 
 void SetLMK(void)
 {
-/*
    uint8_t j = 1;
    for (uint8_t i = 0; i < 8; i++, j<<=1)
    {
@@ -643,14 +642,14 @@ void SetLMK(void)
         else
             LMK0X0XX_WRITE(0x00000100 | i);
    }
-*/
 
 
-   LMK0X0XX_WRITE(0x00000101);
+/*   LMK0X0XX_WRITE(0x00000101);
    LMK0X0XX_WRITE(0x00000102);
    LMK0X0XX_WRITE(0x00000103);
    LMK0X0XX_WRITE(0x00000104);
    LMK0X0XX_WRITE(0x00000105);
+
    //LMK0X0XX_WRITE(0x00030AF6);
    //LMK0X0XX_WRITE(0x00030806);
 #ifdef DEBUG_REGS
@@ -658,12 +657,12 @@ void SetLMK(void)
 #else
    LMK0X0XX_WRITE(MAKE_LMK(1, 1, LMK_devider, 0, 6));
 #endif
-
+   LMK0X0XX_WRITE(0x00000107);
+*/
 #ifdef PRESENT_GPS
    LMK0X0XX_WRITE(MAKE_LMK(1, 1, GpsSync_divider * LMK_devider, 0, 4));
 #endif
 
-   LMK0X0XX_WRITE(0x00000107);
    LMK0X0XX_WRITE(0x00022A09);
    LMK0X0XX_WRITE(0x6800000E);
 
