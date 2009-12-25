@@ -638,7 +638,7 @@ void SetLMK(void)
    for (uint8_t i = 0; i < 8; i++, j<<=1)
    {
         if ((j & LMK_OutMask) == j)
-            LMK0X0XX_WRITE(MAKE_LMK(1, 1, LMK_devider/2, 0, i));
+            LMK0X0XX_WRITE(MAKE_LMK(1, 1, LMK_devider, 0, i));
         else
             LMK0X0XX_WRITE(0x00000100 | i);
    }
