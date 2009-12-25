@@ -57,6 +57,7 @@ uint8_t pCmd[]        PROGMEM  = "REG"
                                  "DEF"
                                  "INF"
                                  "VER"
+                                 "HWI"
                                  "RST"
                                  "LDE"
                                  "STE";

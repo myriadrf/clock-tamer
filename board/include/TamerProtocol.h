@@ -60,6 +60,7 @@ typedef enum tamerCommandType
     cmdDEFAULTS,
     cmdINFO,
     cmdVERSION,
+    cmdHWINFO,
     cmdRESET,
     cmdLOAD_EEPROM,
     cmdSTORE_EEPROM,
