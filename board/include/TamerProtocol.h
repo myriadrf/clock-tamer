@@ -48,7 +48,12 @@ NFO
 */
 
 
-
+/** @brief Internal values of control commands classes.
+*
+*  @see This enum is tightly coupled with \p pCmd variable in
+*       TamerProtocol.c source file, which contains string
+*       representation of the commands.
+*/
 typedef enum tamerCommandType
 {
     cmdIDLE = 0,
@@ -64,6 +69,12 @@ typedef enum tamerCommandType
     cmdSTORE_EEPROM,
 } CommandType_t;
 
+/** @brief Internal values of control commands target types.
+*
+*  @see This enum is tightly coupled with \p pTrg variable in
+*       TamerProtocol.c source file, which contains string
+*       representation of the commands.
+*/
 typedef enum tamerTargetType
 {
     trgNONE = 0,
@@ -76,6 +87,12 @@ typedef enum tamerTargetType
 
 } TargetType_t;
 
+/** @brief Internal values of control commands target details.
+*
+*  @see This enum is tightly coupled with \p pDet variable in
+*       TamerProtocol.c source file, which contains string
+*       representation of the commands.
+*/
 typedef enum tamerTargetDetails
 {
     detNONE = 0,
@@ -97,7 +114,8 @@ typedef enum tamerTargetDetails
     detR03,
 } TargetDetails_t;
 
-
+/** @brief Internal (decoded) command representation.
+*/
 typedef struct tamerCommad
 {
     CommandType_t    cmd;
