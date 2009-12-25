@@ -247,6 +247,7 @@ CFLAGS += $(CSTANDARD)
 CFLAGS += -D LUFA_DFU_DEVICE_SECTION="__attribute__ ((section (\".bootloader\")))"
 CFLAGS += -D LUFA_SHARED_DATA_SECTION="__attribute__ ((section (\".shareddata\")))"
 CFLAGS += -D HWIEEMEM="__attribute__ ((section (\".hwieeprom\")))" -DHWISTR=$(HWISTR)
+CFLAGS += -D SAFE_EEPROM_ADDRESS=412
 
 #---------------- Compiler Options C++ ----------------
 #  -g*:          generate debugging information

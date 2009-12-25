@@ -379,7 +379,8 @@ DFU_SECTION void DFU_EVENT_USB_Device_UnhandledControlRequest(void)
                             }
 
                             /* Read the byte from the USB interface and write to to the EEPROM */
-                            eeprom_write_byte((uint8_t*)StartAddr, Endpoint_Read_Byte());
+							if (StartAddr < SAFE_EEPROM_ADDRESS)
+                            	eeprom_write_byte((uint8_t*)StartAddr, Endpoint_Read_Byte());
 
                             /* Adjust counters */
                             StartAddr++;
