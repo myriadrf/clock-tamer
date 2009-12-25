@@ -148,9 +148,9 @@ uint8_t resBadRange[] PROGMEM = "Bad tuning range";
 
 
 //#define SERG_TAMER
-#define CLOCK_TAMER
+#define CLOCK_TAMER_2080
 
-#ifdef CLOCK_TAMER
+#ifdef CLOCK_TAMER_1515
 
 //#define DEF_Fosc            26000035
 #define DEF_Fosc            20000000
@@ -161,6 +161,16 @@ uint8_t resBadRange[] PROGMEM = "Bad tuning range";
 
 // LMX1515E
 #define DEF_VCO_Kbit        2000
+
+#elif defined(CLOCK_TAMER_2080)
+
+#define DEF_Fosc            20000000
+#define DEF_Fout            52000000
+
+#define DEF_VCO_MIN         1904
+#define DEF_VCO_MAX         2274
+
+#define DEF_VCO_Kbit        4500
 
 #elif defined(SERG_TAMER)
 
@@ -313,6 +323,7 @@ void LoadHwInfo(void)
             break;
         Buffer_StoreElement(&USARTtoUSB_Buffer, c);
     }
+	FillResultNoNewLinePM(newLine);
 }
 
 
