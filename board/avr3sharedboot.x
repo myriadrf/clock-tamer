@@ -11,7 +11,8 @@ MEMORY
   bootstrap (rx)   : ORIGIN = 0, LENGTH = 128K
   data      (rw!x) : ORIGIN = 0x800060, LENGTH = 0xffa0
   bootdata  (rw!x) : ORIGIN = 0x800060, LENGTH = 0xffa0
-  eeprom    (rw!x) : ORIGIN = 0x810000, LENGTH = 64K
+  eeprom    (rw!x) : ORIGIN = 0x810000, LENGTH = 412
+  hwieeprom (rw!x) : ORIGIN = 0x81019C, LENGTH = 100
   fuse      (rw!x) : ORIGIN = 0x820000, LENGTH = 1K
   lock      (rw!x) : ORIGIN = 0x830000, LENGTH = 1K
   signature (rw!x) : ORIGIN = 0x840000, LENGTH = 1K
@@ -249,6 +250,11 @@ SECTIONS
     *(.eeprom*)
      __eeprom_end = . ;
   }  > eeprom
+  .hwieeprom  :
+  {
+    *(.eeprom*)
+     __eeprom_end = . ;
+  }  > hwieeprom
   .fuse  :
   {
     KEEP(*(.fuse))

@@ -142,7 +142,7 @@ void FillUint16(uint16_t val)
 
 uint8_t resOk[] PROGMEM = "OK";
 
-uint8_t resVersion[] PROGMEM = "ClockTamer HW-1.0 API-1";
+uint8_t resVersion[] PROGMEM = "ClockTamer SW=1.0 API=1";
 uint8_t resBadRange[] PROGMEM = "Bad tuning range";
 
 
@@ -255,6 +255,12 @@ uint16_t eeDacValue     EEMEM = 2048;
 
 uint8_t  eeAutoGPSSync  EEMEM = 1;
 
+#define HWI_LEN 100
+#ifndef HWISTR
+#   error "HWISTR macro must be defined!"
+#endif
+char     eeHWInfo[] HWIEEMEM  = STRINGIFY(HWISTR);
+
 void LoadEEPROM(void)
 {
     Fosc = eeprom_read_dword(&eeFosc);
@@ -295,6 +301,18 @@ void StoreEEPROM(void)
 #ifdef PRESENT_GPS
     eeprom_write_byte(&eeAutoGPSSync, AutoUpdateGps);
 #endif
+}
+
+void LoadHwInfo(void)
+{
+    int i;
+    for (i=0; i<HWI_LEN; i++)
+    {
+        char c = eeprom_read_byte(&eeHWInfo[i]);
+        if (c == 0)
+            break;
+        Buffer_StoreElement(&USARTtoUSB_Buffer, c);
+    }
 }
 
 
@@ -986,6 +1004,10 @@ uint8_t ProcessCommand(void)
             FillResultPM(resOk);
             return 1;
         }
+
+        case cmdHWINFO:
+            LoadHwInfo();
+            return 1;
 
         case cmdVERSION:
             FillResultPM(resVersion);
