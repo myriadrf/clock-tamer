@@ -1,6 +1,6 @@
 #!/bin/sh
 
-TAMER_DEV="ttyACM0"
+TAMER_DEV="/dev/ttyACM0"
 TAMER_VCO="2080"
 
 tamer_echo()
