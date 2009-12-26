@@ -149,6 +149,7 @@ uint8_t resBadRange[] PROGMEM = "Bad tuning range";
 
 //#define SERG_TAMER
 #define CLOCK_TAMER_2080
+//#define CLOCK_TAMER_1515
 
 #ifdef CLOCK_TAMER_1515
 
@@ -640,25 +641,9 @@ void SetLMK(void)
         if ((j & LMK_OutMask) == j)
             LMK0X0XX_WRITE(MAKE_LMK(1, 1, LMK_devider, 0, i));
         else
-            LMK0X0XX_WRITE(0x00000100 | i);
+            LMK0X0XX_WRITE(0x00000100 | (uint32_t)i);
    }
 
-
-/*   LMK0X0XX_WRITE(0x00000101);
-   LMK0X0XX_WRITE(0x00000102);
-   LMK0X0XX_WRITE(0x00000103);
-   LMK0X0XX_WRITE(0x00000104);
-   LMK0X0XX_WRITE(0x00000105);
-
-   //LMK0X0XX_WRITE(0x00030AF6);
-   //LMK0X0XX_WRITE(0x00030806);
-#ifdef DEBUG_REGS
-   LMK0X0XX_WRITE(tmp_lmk = MAKE_LMK(1, 1, LMK_devider, 0, 6));
-#else
-   LMK0X0XX_WRITE(MAKE_LMK(1, 1, LMK_devider, 0, 6));
-#endif
-   LMK0X0XX_WRITE(0x00000107);
-*/
 #ifdef PRESENT_GPS
    LMK0X0XX_WRITE(MAKE_LMK(1, 1, GpsSync_divider * LMK_devider, 0, 4));
 #endif
