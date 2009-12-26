@@ -138,12 +138,13 @@ SRC = src/$(TARGET).c                                                 \
 	  src/TamerProtocol.c                                            \
 	  src/DescriptorsCDC.c                                            \
 	  src/RingBuff.c                                              \
+	  $(LUFA_PATH)/LUFA/Drivers/USB/Class/Device/CDC.c            \
+	  $(LUFA_PATH)/LUFA/Drivers/USB/Class/Host/CDC.c              \
 	  $(LUFA_PATH)/LUFA/Drivers/USB/LowLevel/Endpoint.c           \
  	  $(LUFA_PATH)/LUFA/Drivers/USB/LowLevel/Pipe.c               \
 	  $(LUFA_PATH)/LUFA/Drivers/USB/HighLevel/Events.c            \
 	  $(LUFA_PATH)/LUFA/Drivers/USB/HighLevel/ConfigDescriptor.c  \
-	  $(LUFA_PATH)/LUFA/Drivers/USB/Class/Device/CDC.c            \
-	  $(LUFA_PATH)/LUFA/Drivers/USB/Class/Host/CDC.c              \
+
 
 ifeq ($(SDK), 0)
 SRC += \
