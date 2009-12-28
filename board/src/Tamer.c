@@ -82,7 +82,7 @@ uint8_t resSyntax[] PROGMEM = "SYNTAX ERROR";
 uint8_t resErr[] PROGMEM = "CMD ERROR";
 
 
-uint8_t commands = 0;
+volatile uint8_t commands = 0;
 
 int main(void)
 {
