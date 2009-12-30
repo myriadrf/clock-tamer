@@ -59,8 +59,7 @@
 #----------------------------------------------------------------------------
 
 
-SDK=0
-HWISTR = "LMX=2080 LMK=1010 FOSC=20"
+SDK?=1
 
 
 # MCU name
@@ -109,6 +108,9 @@ FORMAT = ihex
 
 # Target file name (without extension).
 TARGET = Tamer
+ifneq ($(SDK), 0)
+TARGET = Tamer-sdk-v$(SDK)
+endif
 
 
 # Object files directory
@@ -132,11 +134,11 @@ endif
 
 # List C source files here. (C dependencies are automatically generated.)
 
-SRC = src/$(TARGET).c                                                 \
-	  src/TamerBoard.c                                               \
-	  src/TamerControl.c                                             \
-	  src/TamerProtocol.c                                            \
-	  src/DescriptorsCDC.c                                            \
+SRC = src/Tamer.c                                                 \
+	  src/TamerBoard.c                                            \
+	  src/TamerControl.c                                          \
+	  src/TamerProtocol.c                                         \
+	  src/DescriptorsCDC.c                                        \
 	  src/RingBuff.c                                              \
 	  $(LUFA_PATH)/LUFA/Drivers/USB/Class/Device/CDC.c            \
 	  $(LUFA_PATH)/LUFA/Drivers/USB/Class/Host/CDC.c              \
@@ -148,8 +150,9 @@ SRC = src/$(TARGET).c                                                 \
 
 ifeq ($(SDK), 0)
 SRC += \
-	  src/DescriptorsDFU.c                                            \
-	  src/BootloaderDFU.c                                             \
+	  src/TamerHwistr.c                                           \
+	  src/DescriptorsDFU.c                                        \
+	  src/BootloaderDFU.c                                         \
 	  $(LUFA_PATH)/LUFA/Drivers/USB/LowLevel/DevChapter9.c        \
 	  $(LUFA_PATH)/LUFA/Drivers/USB/LowLevel/LowLevel.c           \
 	  $(LUFA_PATH)/LUFA/Drivers/USB/HighLevel/USBInterrupt.c      \
@@ -350,7 +353,7 @@ LDFLAGS += -Wl,--section-start=.bootloader=$(BOOT_START)
 ifeq ($(SDK), 0)
 LDFLAGS += -Wl,--script=avr3sharedboot.x
 else
-LDFLAGS += -Wl,--script=avr3-sdk.x
+LDFLAGS += -Wl,--script=sdk-v$(SDK)/avr3-sdk.x
 endif
 LDFLAGS += $(EXTMEMOPTS)
 LDFLAGS += $(patsubst %,-L%,$(EXTRALIBDIRS))

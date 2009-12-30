@@ -20,17 +20,21 @@
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#include <stdint.h>
+
 #include "Tamer.h"
 #include "TamerBoard.h"
 #include "lmx2531.h"
 #include "lmk0x0xx.h"
 
+#include "TamerControl.h"
+#include "TamerConfig.h"
+
 #include <util/delay.h>
 #include <avr/eeprom.h>
 
-//#define PRESENT_DAC12
+
 //#define DEBUG_REGS
-//#define PRESENT_GPS
 
 
 uint8_t SetLMX2531(uint8_t tuneOnly);
@@ -147,58 +151,6 @@ uint8_t resBadRange[] PROGMEM = "Bad tuning range";
 
 
 
-//#define SERG_TAMER
-#define CLOCK_TAMER_2080
-//#define CLOCK_TAMER_1515
-
-#ifdef CLOCK_TAMER_1515
-
-//#define DEF_Fosc            26000035
-#define DEF_Fosc            20000000
-#define DEF_Fout            52000000
-
-#define DEF_VCO_MIN         1450
-#define DEF_VCO_MAX         1580
-
-// LMX1515E
-#define DEF_VCO_Kbit        2000
-
-#elif defined(CLOCK_TAMER_2080)
-
-#define DEF_Fosc            20000000
-#define DEF_Fout            52000000
-
-#define DEF_VCO_MIN         1904
-#define DEF_VCO_MAX         2274
-
-#define DEF_VCO_Kbit        4500
-
-#elif defined(SERG_TAMER)
-
-//#define DEF_Fosc            26000035
-#define DEF_Fosc            26000000
-#define DEF_Fout            52000000
-
-#define DEF_VCO_MIN         1590
-#define DEF_VCO_MAX         1700
-// LMX1515E
-//#define Kbit              2000
-// LMX1650E
-#define DEF_VCO_Kbit        2100
-// LMX2080E
-//#define Kbit              4500
-#else
-// ALEX_TAMER
-#define DEF_Fosc            9999983
-#define DEF_Fout            52000000
-
-#define DEF_VCO_MIN         1904
-#define DEF_VCO_MAX         2274
-
-#define DEF_VCO_Kbit        4500
-#endif
-
-
 //#define NOVARS
 
 #ifdef NOVARS
@@ -217,7 +169,9 @@ uint16_t VCO_MAX =  DEF_VCO_MAX;
 uint16_t VCO_Kbit = DEF_VCO_Kbit;
 #endif
 
-uint8_t LMK_OutMask = 1 << 6;
+
+
+uint8_t LMK_OutMask = DEF_OUT_MASK_LMK;
 uint8_t LMK_devider;
 uint8_t AutoFreq;
 #ifdef PRESENT_DAC12
@@ -259,18 +213,12 @@ uint32_t eeFout         EEMEM = DEF_Fout;
 uint16_t eeVCO_MIN      EEMEM = DEF_VCO_MIN;
 uint16_t eeVCO_MAX      EEMEM = DEF_VCO_MAX;
 uint16_t eeVCO_Kbit     EEMEM = DEF_VCO_Kbit;
-uint8_t  eeLMK_OutMask  EEMEM = 1 << 6;
+uint8_t  eeLMK_OutMask  EEMEM = DEF_OUT_MASK_LMK;
 uint8_t  eeAutoFreq     EEMEM = 1;
 
 uint16_t eeDacValue     EEMEM = 2048;
 
 uint8_t  eeAutoGPSSync  EEMEM = 1;
-
-#define HWI_LEN 100
-#ifndef HWISTR
-#   error "HWISTR macro must be defined!"
-#endif
-char     eeHWInfo[] HWIEEMEM  = STRINGIFY(HWISTR);
 
 void LoadEEPROM(void)
 {
@@ -501,15 +449,6 @@ void InitLMK(void)
     LMK0X0XX_WRITE(0x80000100);
 }
 
-#define MAKE_UINT32T(a,b,c,d)      \
-    ( ((uint32_t)(a)<<24)  |       \
-      ((uint32_t)(b)<<16)  |       \
-      ((uint16_t)(c)<<8)   |       \
-      (d) )
-
-#define MAKE_UINT16T(c,d)      \
-      (((uint16_t)(c)<<8)   |  \
-      (d) )
 
 
 #define den_bit                 21
