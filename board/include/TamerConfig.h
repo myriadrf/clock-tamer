@@ -25,36 +25,36 @@
 
 
 
-//#define TAMMER_2080_20
+//#define TAMER_2080_20
 //#define DEF_OUT_MASK_LMK		((1 << 6) | (1 << 7))
 
 
 // Some hack defines for working without configure
-#if defined(TAMMER_1515_20)
+#if defined(TAMER_1515_20)
 #define LMK_TYPE				1010
 #define LMX2531_TYPE 			1515
 #define TAMER_OSC			20
-#elif defined(TAMMER_2080_20)
+#elif defined(TAMER_2080_20)
 #define LMK_TYPE				1010
 #define LMX2531_TYPE 			2080
 #define TAMER_OSC			20
-#elif defined(TAMMER_2080_10)
+#elif defined(TAMER_2080_10)
 #define LMK_TYPE				1010
 #define LMX2531_TYPE 			2080
 #define TAMER_OSC			10
-#elif defined(TAMMER_2080_VCTXCO_26_GPS)
+#elif defined(TAMER_2080_VCTXCO_26_GPS)
 #define LMK_TYPE				1010
 #define LMX2531_TYPE 			2080
 #define TAMER_OSC			26
 #define PRESENT_GPS
 #define PRESENT_DAC12
-#elif defined(TAMMER_1650_26_GPS)
+#elif defined(TAMER_1650_26_GPS)
 #define LMK_TYPE				1010
 #define LMX2531_TYPE 			1650
 #define TAMER_OSC			26
 #define PRESENT_GPS
 #else
-#error You should define your platform. There is no configure yet, sorry.
+#error You should define ClockTamer hardware modification. There is no configure yet, sorry.
 #endif
 
 #define DEF_Fosc            1000000*TAMER_OSC
