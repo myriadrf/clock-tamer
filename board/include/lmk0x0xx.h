@@ -26,4 +26,9 @@
 #define MAKE_LMK(mux, en, div, dly, r) \
     (((((((((int24_t)mux << 1) | en) << 8) | div ) << 4) | dly ) << 4) | r)
 
+#define MAKE_LMK_LL(dly, r)     (((dly) << 4) | r)
+#define MAKE_LMK_LH(div)        (div)
+#define MAKE_LMK_HL(mux, en)    (((mux) << 1) | en)
+#define MAKE_LMK_HH()           0
+
 #endif
