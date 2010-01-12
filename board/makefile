@@ -59,7 +59,7 @@
 #----------------------------------------------------------------------------
 
 
-SDK?=1
+SDK?=1_1
 
 
 # MCU name
@@ -129,7 +129,7 @@ LUFA_OPTS  = -D USB_DEVICE_ONLY
 LUFA_OPTS += -D FIXED_NUM_CONFIGURATIONS=1
 LUFA_OPTS += -D USE_FLASH_DESCRIPTORS
 LUFA_OPTS += -D USE_STATIC_OPTIONS="(USB_DEVICE_OPT_FULLSPEED | USB_OPT_REG_ENABLED | USB_OPT_AUTO_PLL)"
-ifeq ($(SDK), 1)
+ifneq ($(SDK), 0)
 LUFA_OPTS += -D LUFA_NODFU_ENDPOINT_CODE
 endif
 
