@@ -23,6 +23,7 @@
 
 #include "Tamer.h"
 #include "TamerBoard.h"
+#include "TamerConfig.h"
 
 #define INCLUDE_FROM_TAMER_HWISTR_H
 #include "TamerControl.h"

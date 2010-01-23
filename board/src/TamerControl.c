@@ -660,19 +660,19 @@ uint8_t ProcessCommand(void)
                 case trgLMK:
                     write_reg_LMK0X0XX(command.data[3], command.data[2], command.data[1], command.data[0]);
                     FillResultPM(resOk);
-                    return;
+                    return 1;
 
                 case trgLMX:
                     write_reg_LMX2531(command.data[2], command.data[1], command.data[0]);
                     FillResultPM(resOk);
-                    return;
+                    return 1;
 #ifdef PRESENT_DAC12
                 case trgDAC:
                     switch (command.details)
                     {
                         case detD12:
                             write_reg_DAC12(command.data[1], command.data[0]);
-                            return;
+                            return 1;
                         default:
                             return 0;
                     }

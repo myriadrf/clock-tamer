@@ -107,9 +107,10 @@ FORMAT = ihex
 
 
 # Target file name (without extension).
-TARGET = Tamer
+TARGET_BASE = Tamer
+TARGET = $(TARGET_BASE)
 ifneq ($(SDK), 0)
-TARGET = Tamer-sdk-v$(SDK)
+TARGET = $(TARGET_BASE)-sdk-v$(SDK)
 endif
 
 
@@ -128,7 +129,7 @@ LUFA_OPTS  = -D USB_DEVICE_ONLY
 LUFA_OPTS += -D FIXED_NUM_CONFIGURATIONS=1
 LUFA_OPTS += -D USE_FLASH_DESCRIPTORS
 LUFA_OPTS += -D USE_STATIC_OPTIONS="(USB_DEVICE_OPT_FULLSPEED | USB_OPT_REG_ENABLED | USB_OPT_AUTO_PLL)"
-ifeq ($(SDK), 1)
+ifneq ($(SDK), 0)
 LUFA_OPTS += -D LUFA_NODFU_ENDPOINT_CODE
 endif
 
@@ -370,13 +371,13 @@ LDFLAGS += $(PRINTF_LIB) $(SCANF_LIB) $(MATH_LIB)
 # Type: avrdude -c ?
 # to get a full listing.
 #
-AVRDUDE_PROGRAMMER = jtagmkII
+AVRDUDE_PROGRAMMER = dragon_isp
 
 # com1 = serial port. Use lpt1 to connect to parallel port.
 AVRDUDE_PORT = usb
 
 AVRDUDE_WRITE_FLASH = -U flash:w:$(TARGET).hex
-#AVRDUDE_WRITE_EEPROM = -U eeprom:w:$(TARGET).eep
+AVRDUDE_WRITE_EEPROM = -U eeprom:w:$(TARGET).eep
 
 
 # Uncomment the following if you want avrdude's erase cycle counter.
@@ -494,7 +495,7 @@ ALL_ASFLAGS = -mmcu=$(MCU) -I. -x assembler-with-cpp $(ASFLAGS)
 all: begin gccversion sizebefore build checkinvalidevents showliboptions showtarget sizeafter end
 
 avreal:
-	sudo /home/serg/avreal/avreal64-1.27r3 -ab -p/dev/parport0 -o300kHz  +90usb162 -e -w Tamer.hex -v
+	sudo /home/serg/avreal/avreal64-1.27r3 -ab -p/dev/parport0 -o300kHz  +90usb162 -e -w $(TARGET_BASE).hex -v
 
 avreal-fuse:
 	sudo /home/serg/avreal/avreal64-1.27r3 -ab -p/dev/parport0 -o300kHz  +90usb162 -fBOOTRST=0 -w
@@ -737,17 +738,17 @@ $(OBJDIR)/%.o : %.S
 clean: begin clean_list clean_binary end
 
 clean_binary:
-	$(REMOVE) $(TARGET).hex
+	$(REMOVE) $(TARGET_BASE)*.hex
 	
 clean_list:
 	@echo $(MSG_CLEANING)
-	$(REMOVE) $(TARGET).eep
-	$(REMOVE) $(TARGET)eep.hex
-	$(REMOVE) $(TARGET).cof
-	$(REMOVE) $(TARGET).elf
-	$(REMOVE) $(TARGET).map
-	$(REMOVE) $(TARGET).sym
-	$(REMOVE) $(TARGET).lss
+	$(REMOVE) $(TARGET_BASE)*.eep
+	$(REMOVE) $(TARGET_BASE)*eep.hex
+	$(REMOVE) $(TARGET_BASE)*.cof
+	$(REMOVE) $(TARGET_BASE)*.elf
+	$(REMOVE) $(TARGET_BASE)*.map
+	$(REMOVE) $(TARGET_BASE)*.sym
+	$(REMOVE) $(TARGET_BASE)*.lss
 	$(REMOVE) $(SRC:%.c=$(OBJDIR)/%.o)
 	$(REMOVE) $(SRC:%.c=$(OBJDIR)/%.lst)
 	$(REMOVE) $(ASRC:%.S=$(OBJDIR)/%.o)
