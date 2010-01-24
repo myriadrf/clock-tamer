@@ -28,7 +28,7 @@
 #ifndef _USRP_SOURCE_H_
 #define _USRP_SOURCE_H_
 
-#include <usrp_standard.h>
+#include <usrp/usrp_standard.h>
 #include "spi_interface.h"
 
 

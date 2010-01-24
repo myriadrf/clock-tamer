@@ -32,9 +32,9 @@
 #include <pthread.h>
 #include <math.h>
 
-#include <usrp_standard.h>
-#include <usrp_subdev_spec.h>
-#include <usrp_dbid.h>
+#include <usrp/usrp_standard.h>
+#include <usrp/usrp_subdev_spec.h>
+#include <usrp/usrp_dbid.h>
 
 #include "usrp_source.h"
 
@@ -198,8 +198,14 @@ int usrp_source::spiConfigure(int pinMOSI, int pinMISO, int pinSCK, int pinSS)
 	m_u_rx->_write_oe(m_side,
 	                  (1<<pinMOSI)|(0<<pinMISO)|(1<<pinSCK)|(1<<pinSS),
 	                  (1<<pinMOSI)|(1<<pinMISO)|(1<<pinSCK)|(1<<pinSS));
-	// Set SCK to high in idle mode and SS to low level
-	m_u_rx->write_io(m_side, (1<<pinSCK)|(0<<pinSS), (1<<pinSCK)|(1<<pinSS));
+	// Set SCK to high in idle mode and SS to high level
+	m_u_rx->write_io(m_side, (1<<pinSCK)|(1<<pinSS), (1<<pinSCK)|(1<<pinSS));
+	
+	// Write 0xFF to kinda initialize SPI on slave. If we don't do this
+	// we may get junk in first byte because changing OE register disturbs
+	// ATMega SPI too much.
+	uint8_t data;
+	spiTransfer(data, SPI_FILLER);
 	return 0;
 }
 
@@ -207,19 +213,29 @@ void usrp_source::spiTransfer(uint8_t &dataIn, uint8_t dataOut)
 {
 	unsigned bit;
 
+	// Set SS to low level (init SPI transfer)
+	m_u_rx->write_io(m_side, (0<<mSpiConfig.pinSS), (1<<mSpiConfig.pinSS));
+
 	for (bit = 0; bit < 8; bit++) {
+
 		// Set MOSI
 		m_u_rx->write_io(m_side, ((dataOut>>7)<<mSpiConfig.pinMOSI),
 		                 (1<<mSpiConfig.pinMOSI));
 		dataOut <<= 1;
 
-		// Clock cycle
+		// SCK: high -> low
 		m_u_rx->write_io(m_side, (0<<mSpiConfig.pinSCK), (1<<mSpiConfig.pinSCK));
-		m_u_rx->write_io(m_side, (1<<mSpiConfig.pinSCK), (1<<mSpiConfig.pinSCK));
 
 		// Read MISO
 		dataOut |= (m_u_rx->read_io(m_side)>>mSpiConfig.pinMISO) & 1;
+
+		// SCK: low -> high
+		m_u_rx->write_io(m_side, (1<<mSpiConfig.pinSCK), (1<<mSpiConfig.pinSCK));
+
 	}
+
+	// Set SS to high level (finish SPI transfer)
+	m_u_rx->write_io(m_side, (1<<mSpiConfig.pinSS), (1<<mSpiConfig.pinSS));
 
 	dataIn = dataOut;
 }
