@@ -42,6 +42,8 @@ int ClockTamerSpi::send(const char *command, char *answerBuf, int answerBufLen)
    {
       mpSpiInterface->spiTransfer(data, command[i]);
       // TODO: receive data
+      if (data != SPI_FILLER)
+         fprintf(stderr, ">0x%X(%c) ", data, data<31?'?':data);
       assert(data == SPI_FILLER);
    }
    mpSpiInterface->spiTransfer(data, 0x0D);
@@ -59,12 +61,12 @@ int ClockTamerSpi::send(const char *command, char *answerBuf, int answerBufLen)
    while (mUnansweredNum > 0)
    {
       // We need only last answer, so just ignore all previous data
-      answerLen = 0;
+//      answerLen = 0;
       
       mpSpiInterface->spiTransfer(data);
       if (data != SPI_FILLER && answerLen < answerBufLen)
       {
-         fprintf(stderr, "%c", data);
+         fprintf(stderr, "0x%X(%c) ", data, data<31?'?':data);
          answerBuf[answerLen++] = data;
          if (data == 0x0A && answerLen > 1 && answerBuf[answerLen-2] == 0x0D)
          {
