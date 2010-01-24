@@ -28,8 +28,8 @@
 /*
  * clock_tamer
  *
- * 	Calculates the current offset using GSM FCCH bursts from local GSM
- * 	tower.
+ * Calculates the current offset using GSM FCCH bursts from local GSM
+ * tower.
  */
 
 #include <stdio.h>
@@ -119,9 +119,19 @@ int main(int argc, char **argv) {
    spi = new ClockTamerSpi(u);
    char command[1024];
    char answer[ClockTamerSpi::BUFFER_LEN+1];
-   
+
+//#define INF_LOOP
+#ifdef INF_LOOP
+   SpiInterfaceAbstract *iface = u;
+   uint8_t data;
+   while (1)
+   {
+      iface->spiTransfer(data, 0xF0);
+      fprintf(stderr, "2: 0x%X\n", data);
+   }
+#else
    fprintf(stderr, "Your ClockTamer is listenning. Ready to command!\n");
-	while (fgets(command, sizeof(command), stdin) != NULL) {
+   while (fgets(command, sizeof(command), stdin) != NULL) {
       int commandLen = strlen(command);
       while (commandLen > 0 && ( command[commandLen-1] == 0x0D || command[commandLen-1] == 0x0A ))
       {
@@ -131,19 +141,15 @@ int main(int argc, char **argv) {
       {
          continue;
       }
-      
-/*      {
-         SpiInterfaceAbstract *iface = u;
-         iface->spiTransfer((uint8_t&)answer[0], (uint8_t)command[0]);
-      }
-*/
+
       fprintf(stderr, "Sending command: \"%s\"\n", command);
       spi->send(command, answer, sizeof(answer));
       fprintf(stderr, "Received answer: \"%s\"\n", answer);
-	};
-   
+   };
+#endif
+
    delete spi;
    delete u;
 
-	return 0;
+   return 0;
 }
