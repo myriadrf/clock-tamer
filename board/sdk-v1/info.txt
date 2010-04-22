@@ -1,0 +1,6 @@
+Using built-in specs.
+Target: avr
+Configured with: ../gcc-4.3.2/configure --enable-win32-registry=WinAVR-20090313 --with-gmp=/usr/local --with-mpfr=/usr/local --prefix=/c/WinAVR --target=avr --enable-languages=c,c++,objc --with-dwarf2 --enable-doc --disable-shared --disable-libada --disable-libssp --disable-nls --with-pkgversion='WinAVR 20090313' --with-bugurl='URL:http://sourceforge.net/tracker/?atid=520074&group_id=68108&func=browse'
+Thread model: single
+gcc version 4.3.2 (WinAVR 20090313) 
+882228655372 42 default tip
