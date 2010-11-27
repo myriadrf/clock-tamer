@@ -81,8 +81,15 @@ uint8_t resErr[] PROGMEM = "CMD ERROR";
 
 volatile uint8_t commands = 0;
 
+#if TAMER_VER >= 12
+void SetOscillatorMode(uint8_t);
+#endif
+
 int main(void)
 {
+#if TAMER_VER >= 12
+    SetOscillatorMode(0);
+#endif
 
     INFOLED_DDR |=  (1 << INFOLED);
     INFOLED_PORT |= (1 << INFOLED);

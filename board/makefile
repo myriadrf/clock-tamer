@@ -60,11 +60,10 @@
 
 NODFU?=0
 SDK?=1
-
+GPS?=1
 
 # MCU name
 MCU = at90usb162
-
 
 # Target board (see library "Board Types" documentation, USER or blank for projects not requiring
 # LUFA board drivers). If USER is selected, put custom board drivers in a directory called 
@@ -277,6 +276,9 @@ CFLAGS += -DLUFA_SHARED_DATA_SECTION=""
 endif
 CFLAGS += -D HWIEEMEM="__attribute__ ((section (\".hwieeprom\")))" -DHWISTR=$(HWISTR)
 CFLAGS += -D SAFE_EEPROM_ADDRESS=412
+ifeq ($(GPS), 1)
+CFLAGS += -D PRESENT_GPS
+endif
 #CFLAGS += -mcall-prologues
 
 #---------------- Compiler Options C++ ----------------
@@ -377,7 +379,8 @@ LDFLAGS += -Wl,--relax
 LDFLAGS += -Wl,--gc-sections
 LDFLAGS += -Wl,--section-start=.bootloader=$(BOOT_START)
 ifeq ($(NODFU), 1)
-LDFLAGS += -Wl,--section-start=.hwieeprom=0x81009B
+#LDFLAGS += -Wl,--section-start=.hwieeprom=0x81009B
+LDFLAGS += -Wl,--script=avr3nodfu.x
 else
 ifeq ($(SDK), 0)
 LDFLAGS += -Wl,--script=avr3sharedboot.x

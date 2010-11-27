@@ -34,7 +34,16 @@
 #include <avr/eeprom.h>
 
 
-//#define VCO_FIXED
+#if   TAMER_VER >= 12
+#define BLINK_1PPS
+#define GPS_PORT 2
+#elif TAMER_VER == 11
+#define GPS_PORT 3
+#else
+#define GPS_PORT 4
+#endif
+
+#define VCO_FIXED
 //#define NO_VERSION
 //#define NO_HWINFO
 //#define NO_CMDINFO
@@ -43,7 +52,7 @@
 //#define NO_CMDEELOAD
 #define UNROLL_MACROSS_LMX2531
 
-//#define DEBUG_REGS
+#define DEBUG_REGS
 
 
 uint8_t SetLMX2531(uint8_t tuneOnly);
@@ -156,7 +165,15 @@ static void FillUint16(uint16_t val)
 uint8_t resOk[] PROGMEM = "OK";
 
 #ifndef NO_VERSION
+#if TAMER_VER == 12
+uint8_t resVersion[] PROGMEM = "ClockTamer SW=1.2 API=1";
+#elif TAMER_VER == 11
+uint8_t resVersion[] PROGMEM = "ClockTamer SW=1.1 API=1";
+#elif TAMER_VER == 10
 uint8_t resVersion[] PROGMEM = "ClockTamer SW=1.0 API=1";
+#else
+uint8_t resVersion[] PROGMEM = "ClockTamer SW=[unknown] API=1";
+#endif
 #endif
 
 uint8_t resBadRange[] PROGMEM = "Bad tuning range";
@@ -217,6 +234,10 @@ uint8_t AutoUpdateGps;    //AUT
 uint32_t LastAutoUpd;     //MIN
 #endif
 
+#if TAMER_VER >= 12
+uint8_t EnableOscillator = 1;
+#endif
+
 #define GPSSYNC_MAX_FREQ        3000000
 
 
@@ -248,6 +269,8 @@ uint16_t eeDacValue     EEMEM = 2048;
 
 uint8_t  eeAutoGPSSync  EEMEM = 1;
 
+uint8_t  eeEnableOscillator  EEMEM = 1;
+
 static void LoadEEPROM(void)
 {
     Fosc = eeprom_read_dword(&eeFosc);
@@ -268,6 +291,10 @@ static void LoadEEPROM(void)
 
 #ifdef PRESENT_GPS
     AutoUpdateGps = eeprom_read_byte(&eeAutoGPSSync);
+#endif
+
+#if TAMER_VER >= 12
+    EnableOscillator = eeprom_read_byte(&eeEnableOscillator);
 #endif
 }
 
@@ -291,6 +318,11 @@ static void StoreEEPROM(void)
 #ifdef PRESENT_GPS
     eeprom_write_byte(&eeAutoGPSSync, AutoUpdateGps);
 #endif
+
+#if TAMER_VER >= 12
+    eeprom_write_byte(&eeEnableOscillator, EnableOscillator);
+#endif
+
 }
 
 static void LoadHwInfo(void)
@@ -367,6 +399,10 @@ ISR(TIMER1_CAPT_vect, ISR_BLOCK)
     }
 
     Count1PPS++;
+
+#ifdef BLINK_1PPS
+    INFOLED_PORT ^= (1 << INFOLED);
+#endif
 }
 
 ISR(TIMER1_OVF_vect, ISR_BLOCK)
@@ -680,7 +716,7 @@ void SetLMK(void)
    }
 
 #ifdef PRESENT_GPS
-   LMK0X0XX_WRITE(MAKE_LMK(1, 1, GpsSync_divider * LMK_devider, 0, 4));
+   LMK0X0XX_WRITE(MAKE_LMK(1, 1, GpsSync_divider * LMK_devider, 0, GPS_PORT));
 #endif
 
    LMK0X0XX_WRITE(0x00022A09);
@@ -697,7 +733,31 @@ void SetLMK(void)
     LmkSyncSet();
 }
 
+#if TAMER_VER >= 12
+#define ENABLE_OSC  PD6
+#define DDR_OSC     DDRD
+#define PORT_OSC    PORTD
 
+void SetOscillatorMode(uint8_t mode)
+{
+    DDR_OSC |= (1 << ENABLE_OSC);
+
+    if (mode)
+    {
+        PORT_OSC |= (1 << ENABLE_OSC);
+    }
+    else
+    {
+        PORT_OSC &= ~(1 << ENABLE_OSC);
+    }
+}
+
+static void SetOscillator(void)
+{
+    SetOscillatorMode (EnableOscillator);
+}
+
+#endif
 
 void AutoStartControl(void)
 {
@@ -710,10 +770,16 @@ void AutoStartControl(void)
     InitCounters();
 #endif
 
+
+
     AutoFreq = eeprom_read_byte(&eeAutoFreq);
     if (AutoFreq)
     {
         LoadEEPROM();
+
+#if TAMER_VER >= 12
+        SetOscillator();
+#endif
 
         InitLMX2531();
 
@@ -726,6 +792,11 @@ void AutoStartControl(void)
             SetLMK();
         }
     }
+#if TAMER_VER >= 12
+    else
+        SetOscillator();
+#endif
+
 }
 
 #ifdef PRESENT_DAC12
@@ -785,6 +856,23 @@ uint8_t ProcessCommand(void)
         {
             switch (command.type)
             {
+#if TAMER_VER >= 12
+                case trgNONE:
+                {
+                    if (command.details == detOSC)
+                    {
+                        if (command.data[0])
+                            EnableOscillator = 1;
+                        else
+                            EnableOscillator = 0;
+
+                        SetOscillator();
+                        FillResultPM(resOk);
+                        return 1;
+                    }
+                    return 0;
+                }
+#endif
                 case trgLMK:
                 {
                     switch (command.details)

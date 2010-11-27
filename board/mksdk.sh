@@ -9,11 +9,11 @@ FUNCS="__vector_11 USB_Device_ProcessControlRequest USB_Init USB_ResetInterface 
 FUNCS="$FUNCS   Endpoint_ConfigureEndpoint_Prv Endpoint_ClearStatusStage Endpoint_ClearEndpoints  Endpoint_BytesToEPSizeMaskDynamic Endpoint_Write_Control_PStream_LE "
 FUNCS="$FUNCS   LanguageString"
 
-IN=Tamer-sdk.map
+IN=Tamer.map
 
 OUT=Out.txt
 XFILE=avr3sharedboot.x
-OFILE=avr3-sdk.x
+OFILE=avr3-sdk-new.x
 
 echo "" > $OUT
 

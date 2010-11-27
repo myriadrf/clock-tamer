@@ -24,10 +24,33 @@
 #define _TAMER_CONFIG_H_
 
 
+#ifndef TAMER_VER
+#error You should define TAMER_VER (10 stads for 1.0, 11 - 1.1, and 12 - 1.2)
+#endif
 
-//#define TAMER_2080_20
-//#define DEF_OUT_MASK_LMK		((1 << 6) | (1 << 7))
+#if !defined(TAMER_1515_20) && \
+    !defined(TAMER_2080_20) && \
+    !defined(TAMER_2080_10) && \
+    !defined(TAMER_2080_VCTXCO_26_GPS) && \
+    !defined(TAMER_1650_26_GPS)
 
+# if TAMER_VER == 12
+#  define TAMER_2080_20
+# elif TAMER_VER == 11
+#  define TAMER_1515_20
+# else
+#  error You should define TAMER_1515_20, TAMER_2080_20, TAMER_2080_10, TAMER_2080_VCTXCO_26_GPS, TAMER_1650_26_GPS according to you model
+# endif
+#endif
+
+
+#ifdef          PINS_ALL
+#define DEF_OUT_MASK_LMK        (0xff)
+#elif defined   PINS_TWO
+#define DEF_OUT_MASK_LMK        ((1 << 1) | (1 << 6))
+#else
+#define DEF_OUT_MASK_LMK        ((1 << 1))
+#endif
 
 // Some hack defines for working without configure
 #if defined(TAMER_1515_20)
