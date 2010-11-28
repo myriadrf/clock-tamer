@@ -353,6 +353,7 @@ void InitCounters(void)
 
 #define FILTER_EXP_ALPHA        32
 
+#define RESET_OCP_COUNTER       0x80
 
 ISR(TIMER1_CAPT_vect, ISR_BLOCK)
 {
@@ -375,7 +376,11 @@ ISR(TIMER1_CAPT_vect, ISR_BLOCK)
 
         if ((Count1PPS != 0))
         {
-            if ((FilteredVal == 0) || (PPS_skipped > 1))
+            if (PPS_skipped == RESET_OCP_COUNTER)
+            {
+                PPS_skipped++;
+            }
+            else if ((FilteredVal == 0) || (PPS_skipped > 1))
             {
                 PPS_skipped = 0;
                 FilteredVal = FILTER_EXP_ALPHA*(delta);
@@ -441,6 +446,8 @@ void TrimClock(void)
         if (pdelta > 2)
         {
             UpdateOSCValue();
+
+            PPS_skipped = RESET_OCP_COUNTER;
 
             LastAutoUpd = CounterHHValue;
 
