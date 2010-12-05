@@ -40,8 +40,8 @@ PPS_skipped         0x1               obj/src/TamerControl.o
 tmp_r1              0x4               obj/src/TamerControl.o
 LMK_devider         0x1               obj/src/TamerControl.o
 ddd                 0x4               obj/src/TamerControl.o
-USARTtoUSB_Buffer   0x2d              obj/src/Tamer.o
-USBtoUSART_Buffer   0x2d              obj/src/Tamer.o
+USARTtoUSB_Buffer   0x35              obj/src/Tamer.o
+USBtoUSART_Buffer   0x35              obj/src/Tamer.o
 
 Discarded input sections
 
@@ -335,7 +335,7 @@ Address of section .bootloader set to 0x3000
 .rela.plt
  *(.rela.plt)
 
-.text           0x0000000000000000     0x1f4e
+.text           0x0000000000000000     0x1f6a
  *(.vectors)
  .vectors       0x0000000000000000       0x74 /usr/lib/gcc/avr/4.3.2/../../../avr/lib/avr35/crtusb162.o
                 0x0000000000000000                __vectors
@@ -356,276 +356,275 @@ Address of section .bootloader set to 0x3000
                 0x00000000000000be                resOk
                 0x00000000000000c1                resVersion
                 0x00000000000000d9                resBadRange
- .progmem.data  0x00000000000000ea       0x66 obj/src/TamerProtocol.o
-                0x000000000000011f                pDet
+ .progmem.data  0x00000000000000ea       0x69 obj/src/TamerProtocol.o
+                0x0000000000000122                pDet
                 0x00000000000000ea                pCmd
                 0x000000000000010c                pTrg
- .progmem.data  0x0000000000000150       0x9f obj/src/DescriptorsCDC.o
-                0x00000000000001a5                ManufacturerString
-                0x0000000000000150                DeviceDescriptor
-                0x00000000000001bf                ProductString
-                0x0000000000000162                ConfigurationDescriptor
-                0x00000000000001f0                . = ALIGN (0x2)
- *fill*         0x00000000000001ef        0x1 00
-                0x00000000000001f0                __trampolines_start = .
+ .progmem.data  0x0000000000000153       0x9f obj/src/DescriptorsCDC.o
+                0x00000000000001a8                ManufacturerString
+                0x0000000000000153                DeviceDescriptor
+                0x00000000000001c2                ProductString
+                0x0000000000000165                ConfigurationDescriptor
+                0x00000000000001f2                . = ALIGN (0x2)
+                0x00000000000001f2                __trampolines_start = .
  *(.trampolines)
- .trampolines   0x00000000000001f0        0x0 linker stubs
+ .trampolines   0x00000000000001f2        0x0 linker stubs
  *(.trampolines*)
-                0x00000000000001f0                __trampolines_end = .
+                0x00000000000001f2                __trampolines_end = .
  *(.jumptables)
  *(.jumptables*)
  *(.lowtext)
  *(.lowtext*)
-                0x00000000000001f0                __ctors_start = .
+                0x00000000000001f2                __ctors_start = .
  *(.ctors)
-                0x00000000000001f0                __ctors_end = .
-                0x00000000000001f0                __dtors_start = .
+                0x00000000000001f2                __ctors_end = .
+                0x00000000000001f2                __dtors_start = .
  *(.dtors)
-                0x00000000000001f0                __dtors_end = .
+                0x00000000000001f2                __dtors_end = .
  SORT(*)(.ctors)
  SORT(*)(.dtors)
  *(.init0)
- .init0         0x00000000000001f0        0x0 /usr/lib/gcc/avr/4.3.2/../../../avr/lib/avr35/crtusb162.o
-                0x00000000000001f0                __init
+ .init0         0x00000000000001f2        0x0 /usr/lib/gcc/avr/4.3.2/../../../avr/lib/avr35/crtusb162.o
+                0x00000000000001f2                __init
  *(.init0)
  *(.init1)
  *(.init1)
  *(.init2)
- .init2         0x00000000000001f0        0xc /usr/lib/gcc/avr/4.3.2/../../../avr/lib/avr35/crtusb162.o
+ .init2         0x00000000000001f2        0xc /usr/lib/gcc/avr/4.3.2/../../../avr/lib/avr35/crtusb162.o
  *(.init2)
  *(.init3)
  *(.init3)
  *(.init4)
- .init4         0x00000000000001fc       0x16 /usr/lib/gcc/avr/4.3.2/avr35/libgcc.a(_copy_data.o)
-                0x00000000000001fc                __do_copy_data
- .init4         0x0000000000000212       0x10 /usr/lib/gcc/avr/4.3.2/avr35/libgcc.a(_clear_bss.o)
-                0x0000000000000212                __do_clear_bss
+ .init4         0x00000000000001fe       0x16 /usr/lib/gcc/avr/4.3.2/avr35/libgcc.a(_copy_data.o)
+                0x00000000000001fe                __do_copy_data
+ .init4         0x0000000000000214       0x10 /usr/lib/gcc/avr/4.3.2/avr35/libgcc.a(_clear_bss.o)
+                0x0000000000000214                __do_clear_bss
  *(.init4)
  *(.init5)
  *(.init5)
  *(.init6)
  *(.init6)
  *(.init7)
- .init7         0x0000000000000222        0x4 obj/src/bootstrap.o
-                0x0000000000000224                __bootstrap6
-                0x0000000000000224                __bootstrap9
-                0x0000000000000224                __bootstrap11
-                0x0000000000000224                __bootstrap10
-                0x0000000000000224                __bootstrap7
-                0x0000000000000224                __bootstraps_none
-                0x0000000000000224                __bootstrap8
+ .init7         0x0000000000000224        0x4 obj/src/bootstrap.o
+                0x0000000000000226                __bootstrap6
+                0x0000000000000226                __bootstrap9
+                0x0000000000000226                __bootstrap11
+                0x0000000000000226                __bootstrap10
+                0x0000000000000226                __bootstrap7
+                0x0000000000000226                __bootstraps_none
+                0x0000000000000226                __bootstrap8
  *(.init7)
  *(.init8)
  *(.init8)
  *(.init9)
- .init9         0x0000000000000226        0x6 /usr/lib/gcc/avr/4.3.2/../../../avr/lib/avr35/crtusb162.o
+ .init9         0x0000000000000228        0x6 /usr/lib/gcc/avr/4.3.2/../../../avr/lib/avr35/crtusb162.o
  *(.init9)
  *(.text)
- .text          0x000000000000022c        0x2 /usr/lib/gcc/avr/4.3.2/../../../avr/lib/avr35/crtusb162.o
-                0x000000000000022c                __vector_28
-                0x000000000000022c                __vector_1
-                0x000000000000022c                __vector_24
-                0x000000000000022c                __vector_12
-                0x000000000000022c                __bad_interrupt
-                0x000000000000022c                __vector_6
-                0x000000000000022c                __vector_3
-                0x000000000000022c                __vector_23
-                0x000000000000022c                __vector_25
-                0x000000000000022c                __vector_13
-                0x000000000000022c                __vector_17
-                0x000000000000022c                __vector_19
-                0x000000000000022c                __vector_7
-                0x000000000000022c                __vector_27
-                0x000000000000022c                __vector_5
-                0x000000000000022c                __vector_4
-                0x000000000000022c                __vector_9
-                0x000000000000022c                __vector_2
-                0x000000000000022c                __vector_21
-                0x000000000000022c                __vector_15
-                0x000000000000022c                __vector_8
-                0x000000000000022c                __vector_26
-                0x000000000000022c                __vector_10
-                0x000000000000022c                __vector_16
-                0x000000000000022c                __vector_20
- .text          0x000000000000022e       0x4c /usr/lib/gcc/avr/4.3.2/../../../avr/lib/avr35/libc.a(eerd_dword.o)
-                0x000000000000022e                __eerd_dword
- .text          0x000000000000027a       0x4c /usr/lib/gcc/avr/4.3.2/../../../avr/lib/avr35/libc.a(eewr_dword.o)
-                0x000000000000027a                __eewr_dword
-                0x00000000000002c6                . = ALIGN (0x2)
+ .text          0x000000000000022e        0x2 /usr/lib/gcc/avr/4.3.2/../../../avr/lib/avr35/crtusb162.o
+                0x000000000000022e                __vector_28
+                0x000000000000022e                __vector_1
+                0x000000000000022e                __vector_24
+                0x000000000000022e                __vector_12
+                0x000000000000022e                __bad_interrupt
+                0x000000000000022e                __vector_6
+                0x000000000000022e                __vector_3
+                0x000000000000022e                __vector_23
+                0x000000000000022e                __vector_25
+                0x000000000000022e                __vector_13
+                0x000000000000022e                __vector_17
+                0x000000000000022e                __vector_19
+                0x000000000000022e                __vector_7
+                0x000000000000022e                __vector_27
+                0x000000000000022e                __vector_5
+                0x000000000000022e                __vector_4
+                0x000000000000022e                __vector_9
+                0x000000000000022e                __vector_2
+                0x000000000000022e                __vector_21
+                0x000000000000022e                __vector_15
+                0x000000000000022e                __vector_8
+                0x000000000000022e                __vector_26
+                0x000000000000022e                __vector_10
+                0x000000000000022e                __vector_16
+                0x000000000000022e                __vector_20
+ .text          0x0000000000000230       0x4c /usr/lib/gcc/avr/4.3.2/../../../avr/lib/avr35/libc.a(eerd_dword.o)
+                0x0000000000000230                __eerd_dword
+ .text          0x000000000000027c       0x4c /usr/lib/gcc/avr/4.3.2/../../../avr/lib/avr35/libc.a(eewr_dword.o)
+                0x000000000000027c                __eewr_dword
+                0x00000000000002c8                . = ALIGN (0x2)
  *(.text.*)
  .text.__bootstrap0
-                0x00000000000002c6        0x4 obj/src/Tamer.o
-                0x00000000000002c6                __bootstrap0
+                0x00000000000002c8        0x4 obj/src/Tamer.o
+                0x00000000000002c8                __bootstrap0
  .text.__bootstrap2
-                0x00000000000002ca        0xa obj/src/Tamer.o
-                0x00000000000002ca                __bootstrap2
+                0x00000000000002cc        0xa obj/src/Tamer.o
+                0x00000000000002cc                __bootstrap2
  .text.__bootstrap3
-                0x00000000000002d4        0xa obj/src/Tamer.o
-                0x00000000000002d4                __bootstrap3
+                0x00000000000002d6        0xa obj/src/Tamer.o
+                0x00000000000002d6                __bootstrap3
  .text.__bootstrap1
-                0x00000000000002de        0x6 obj/src/Tamer.o
-                0x00000000000002de                __bootstrap1
+                0x00000000000002e0        0x6 obj/src/Tamer.o
+                0x00000000000002e0                __bootstrap1
  .text.__bootstrap5
-                0x00000000000002e4       0x2a obj/src/Tamer.o
-                0x00000000000002e4                __bootstrap5
+                0x00000000000002e6       0x2a obj/src/Tamer.o
+                0x00000000000002e6                __bootstrap5
  .text.__bootstrap4
-                0x000000000000030e        0x8 obj/src/Tamer.o
-                0x000000000000030e                __bootstrap4
+                0x0000000000000310        0x8 obj/src/Tamer.o
+                0x0000000000000310                __bootstrap4
  .text.SetupHardware
-                0x0000000000000316       0x40 obj/src/Tamer.o
-                0x0000000000000316                SetupHardware
- .text.main     0x0000000000000356       0xe4 obj/src/Tamer.o
-                0x0000000000000356                main
+                0x0000000000000318       0x40 obj/src/Tamer.o
+                0x0000000000000318                SetupHardware
+ .text.main     0x0000000000000358       0xe4 obj/src/Tamer.o
+                0x0000000000000358                main
  .text.MicrowireInit
-                0x000000000000043a        0xc obj/src/TamerBoard.o
-                0x000000000000043a                MicrowireInit
+                0x000000000000043c        0xc obj/src/TamerBoard.o
+                0x000000000000043c                MicrowireInit
  .text.MicrowireLatchLMX2531
-                0x0000000000000446        0xa obj/src/TamerBoard.o
-                0x0000000000000446                MicrowireLatchLMX2531
+                0x0000000000000448        0xa obj/src/TamerBoard.o
+                0x0000000000000448                MicrowireLatchLMX2531
  .text.MicrowireLatchLMK0X0XX
-                0x0000000000000450        0xa obj/src/TamerBoard.o
-                0x0000000000000450                MicrowireLatchLMK0X0XX
+                0x0000000000000452        0xa obj/src/TamerBoard.o
+                0x0000000000000452                MicrowireLatchLMK0X0XX
  .text.BoardInit
-                0x000000000000045a       0x22 obj/src/TamerBoard.o
-                0x000000000000045a                BoardInit
+                0x000000000000045c       0x22 obj/src/TamerBoard.o
+                0x000000000000045c                BoardInit
  .text.MicrowireWriteByte
-                0x000000000000047c       0x1e obj/src/TamerBoard.o
-                0x000000000000047c                MicrowireWriteByte
+                0x000000000000047e       0x1e obj/src/TamerBoard.o
+                0x000000000000047e                MicrowireWriteByte
  .text.write_reg_LMK0X0XX
-                0x000000000000049a       0x24 obj/src/TamerBoard.o
-                0x000000000000049a                write_reg_LMK0X0XX
+                0x000000000000049c       0x24 obj/src/TamerBoard.o
+                0x000000000000049c                write_reg_LMK0X0XX
  .text.write_reg_LMX2531
-                0x00000000000004be       0x1a obj/src/TamerBoard.o
-                0x00000000000004be                write_reg_LMX2531
+                0x00000000000004c0       0x1a obj/src/TamerBoard.o
+                0x00000000000004c0                write_reg_LMX2531
  .text.eeprom_read_byte
-                0x00000000000004d8       0x10 obj/src/TamerControl.o
+                0x00000000000004da       0x10 obj/src/TamerControl.o
  .text.eeprom_write_byte
-                0x00000000000004e8       0x1a obj/src/TamerControl.o
+                0x00000000000004ea       0x1a obj/src/TamerControl.o
  .text.InitCounters
-                0x0000000000000502        0xe obj/src/TamerControl.o
-                0x0000000000000502                InitCounters
+                0x0000000000000504        0xe obj/src/TamerControl.o
+                0x0000000000000504                InitCounters
  .text.__vector_14
-                0x0000000000000510      0x222 obj/src/TamerControl.o
-                0x0000000000000510                __vector_14
+                0x0000000000000512      0x222 obj/src/TamerControl.o
+                0x0000000000000512                __vector_14
  .text.__vector_18
-                0x0000000000000732       0x4a obj/src/TamerControl.o
-                0x0000000000000732                __vector_18
+                0x0000000000000734       0x4a obj/src/TamerControl.o
+                0x0000000000000734                __vector_18
  .text.UpdateOSCValue
-                0x000000000000077c      0x134 obj/src/TamerControl.o
-                0x000000000000077c                UpdateOSCValue
+                0x000000000000077e      0x134 obj/src/TamerControl.o
+                0x000000000000077e                UpdateOSCValue
  .text.SetOscillatorMode
-                0x00000000000008b0        0xe obj/src/TamerControl.o
-                0x00000000000008b0                SetOscillatorMode
+                0x00000000000008b2        0xe obj/src/TamerControl.o
+                0x00000000000008b2                SetOscillatorMode
  .text.SetOscillator
-                0x00000000000008be        0x6 obj/src/TamerControl.o
- .text.SetLMK   0x00000000000008c4       0xce obj/src/TamerControl.o
-                0x00000000000008c4                SetLMK
- .text.InitLMK  0x0000000000000992       0x1e obj/src/TamerControl.o
-                0x0000000000000992                InitLMK
+                0x00000000000008c0        0x6 obj/src/TamerControl.o
+ .text.SetLMK   0x00000000000008c6       0xce obj/src/TamerControl.o
+                0x00000000000008c6                SetLMK
+ .text.InitLMK  0x0000000000000994       0x1e obj/src/TamerControl.o
+                0x0000000000000994                InitLMK
  .text.SetLMX2531
-                0x00000000000009b0      0x3f0 obj/src/TamerControl.o
-                0x00000000000009b0                SetLMX2531
+                0x00000000000009b2      0x3f0 obj/src/TamerControl.o
+                0x00000000000009b2                SetLMX2531
  .text.TrimClock
-                0x0000000000000da0       0xe6 obj/src/TamerControl.o
-                0x0000000000000da0                TrimClock
+                0x0000000000000da2       0xe6 obj/src/TamerControl.o
+                0x0000000000000da2                TrimClock
  .text.TamerControlAux
-                0x0000000000000e86        0xc obj/src/TamerControl.o
-                0x0000000000000e86                TamerControlAux
+                0x0000000000000e88        0xc obj/src/TamerControl.o
+                0x0000000000000e88                TamerControlAux
  .text.InitLMX2531
-                0x0000000000000e92       0x44 obj/src/TamerControl.o
-                0x0000000000000e92                InitLMX2531
+                0x0000000000000e94       0x44 obj/src/TamerControl.o
+                0x0000000000000e94                InitLMX2531
  .text.FillHead
-                0x0000000000000ed6       0x4a obj/src/TamerControl.o
- .text.FillCmd  0x0000000000000f20       0x48 obj/src/TamerControl.o
+                0x0000000000000ed8       0x4a obj/src/TamerControl.o
+ .text.FillCmd  0x0000000000000f22       0x48 obj/src/TamerControl.o
  .text.FillUint32
-                0x0000000000000f68       0x9c obj/src/TamerControl.o
+                0x0000000000000f6a       0x9c obj/src/TamerControl.o
  .text.FillResultNoNewLinePM
-                0x0000000000001004       0x1e obj/src/TamerControl.o
-                0x0000000000001004                FillResultNoNewLinePM
+                0x0000000000001006       0x1e obj/src/TamerControl.o
+                0x0000000000001006                FillResultNoNewLinePM
  .text.FillResultPM
-                0x0000000000001022        0x8 obj/src/TamerControl.o
-                0x0000000000001022                FillResultPM
+                0x0000000000001024        0x8 obj/src/TamerControl.o
+                0x0000000000001024                FillResultPM
  .text.LoadEEPROM
-                0x000000000000102a       0x86 obj/src/TamerControl.o
+                0x000000000000102c       0x86 obj/src/TamerControl.o
  .text.AutoStartControl
-                0x00000000000010b0       0x42 obj/src/TamerControl.o
-                0x00000000000010b0                AutoStartControl
+                0x00000000000010b2       0x42 obj/src/TamerControl.o
+                0x00000000000010b2                AutoStartControl
  .text.ProcessCommand
-                0x00000000000010f2      0x4dc obj/src/TamerControl.o
-                0x00000000000010f2                ProcessCommand
+                0x00000000000010f4      0x4f6 obj/src/TamerControl.o
+                0x00000000000010f4                ProcessCommand
  .text.__vector_22
-                0x00000000000015ce       0x7a obj/src/TamerControl.o
-                0x00000000000015ce                __vector_22
+                0x00000000000015ea       0x7a obj/src/TamerControl.o
+                0x00000000000015ea                __vector_22
  .text.ParseValueD
-                0x0000000000001648        0xa obj/src/TamerProtocol.o
+                0x0000000000001664        0xa obj/src/TamerProtocol.o
  .text.IsCommandSeparator
-                0x0000000000001652       0x18 obj/src/TamerProtocol.o
-                0x0000000000001652                IsCommandSeparator
+                0x000000000000166e       0x18 obj/src/TamerProtocol.o
+                0x000000000000166e                IsCommandSeparator
  .text.ParseCommand
-                0x000000000000166a      0x1fa obj/src/TamerProtocol.o
-                0x000000000000166a                ParseCommand
+                0x0000000000001686      0x1fa obj/src/TamerProtocol.o
+                0x0000000000001686                ParseCommand
  .text.CALLBACK_NONDFU_USB_GetDescriptor
-                0x0000000000001864       0x5c obj/src/DescriptorsCDC.o
-                0x0000000000001864                CALLBACK_NONDFU_USB_GetDescriptor
+                0x0000000000001880       0x5c obj/src/DescriptorsCDC.o
+                0x0000000000001880                CALLBACK_NONDFU_USB_GetDescriptor
  .text.Buffer_Initialize
-                0x00000000000018c0       0x14 obj/src/RingBuff.o
-                0x00000000000018c0                Buffer_Initialize
+                0x00000000000018dc       0x14 obj/src/RingBuff.o
+                0x00000000000018dc                Buffer_Initialize
  .text.Buffer_StoreElement
-                0x00000000000018d4       0x92 obj/src/RingBuff.o
-                0x00000000000018d4                Buffer_StoreElement
+                0x00000000000018f0       0x92 obj/src/RingBuff.o
+                0x00000000000018f0                Buffer_StoreElement
  .text.Buffer_GetElement
-                0x0000000000001966       0x66 obj/src/RingBuff.o
-                0x0000000000001966                Buffer_GetElement
+                0x0000000000001982       0x66 obj/src/RingBuff.o
+                0x0000000000001982                Buffer_GetElement
  .text.CDC_Device_Event_Stub
-                0x00000000000019cc        0x2 obj/LUFA-CUR/LUFA/Drivers/USB/Class/Device/CDC.o
-                0x00000000000019cc                EVENT_CDC_Device_LineEncodingChanged
-                0x00000000000019cc                EVENT_CDC_Device_ControLineStateChanged
-                0x00000000000019cc                CDC_Device_Event_Stub
+                0x00000000000019e8        0x2 obj/LUFA-CUR/LUFA/Drivers/USB/Class/Device/CDC.o
+                0x00000000000019e8                EVENT_CDC_Device_LineEncodingChanged
+                0x00000000000019e8                EVENT_CDC_Device_ControLineStateChanged
+                0x00000000000019e8                CDC_Device_Event_Stub
  .text.CDC_Device_BytesReceived
-                0x00000000000019ce       0x54 obj/LUFA-CUR/LUFA/Drivers/USB/Class/Device/CDC.o
-                0x00000000000019ce                CDC_Device_BytesReceived
+                0x00000000000019ea       0x54 obj/LUFA-CUR/LUFA/Drivers/USB/Class/Device/CDC.o
+                0x00000000000019ea                CDC_Device_BytesReceived
  .text.CDC_Device_ReceiveByte
-                0x0000000000001a22       0x46 obj/LUFA-CUR/LUFA/Drivers/USB/Class/Device/CDC.o
-                0x0000000000001a22                CDC_Device_ReceiveByte
+                0x0000000000001a3e       0x46 obj/LUFA-CUR/LUFA/Drivers/USB/Class/Device/CDC.o
+                0x0000000000001a3e                CDC_Device_ReceiveByte
  .text.CDC_Device_Flush
-                0x0000000000001a68       0x64 obj/LUFA-CUR/LUFA/Drivers/USB/Class/Device/CDC.o
-                0x0000000000001a68                CDC_Device_Flush
+                0x0000000000001a84       0x64 obj/LUFA-CUR/LUFA/Drivers/USB/Class/Device/CDC.o
+                0x0000000000001a84                CDC_Device_Flush
  .text.CDC_Device_USBTask
-                0x0000000000001acc       0x48 obj/LUFA-CUR/LUFA/Drivers/USB/Class/Device/CDC.o
-                0x0000000000001acc                CDC_Device_USBTask
+                0x0000000000001ae8       0x48 obj/LUFA-CUR/LUFA/Drivers/USB/Class/Device/CDC.o
+                0x0000000000001ae8                CDC_Device_USBTask
  .text.CDC_Device_SendByte
-                0x0000000000001b14       0x4e obj/LUFA-CUR/LUFA/Drivers/USB/Class/Device/CDC.o
-                0x0000000000001b14                CDC_Device_SendByte
+                0x0000000000001b30       0x4e obj/LUFA-CUR/LUFA/Drivers/USB/Class/Device/CDC.o
+                0x0000000000001b30                CDC_Device_SendByte
  .text.CDC_Device_ConfigureEndpoints
-                0x0000000000001b62       0x9a obj/LUFA-CUR/LUFA/Drivers/USB/Class/Device/CDC.o
-                0x0000000000001b62                CDC_Device_ConfigureEndpoints
+                0x0000000000001b7e       0x9a obj/LUFA-CUR/LUFA/Drivers/USB/Class/Device/CDC.o
+                0x0000000000001b7e                CDC_Device_ConfigureEndpoints
  .text.CDC_Device_ProcessControlRequest
-                0x0000000000001bfc       0xc2 obj/LUFA-CUR/LUFA/Drivers/USB/Class/Device/CDC.o
-                0x0000000000001bfc                CDC_Device_ProcessControlRequest
+                0x0000000000001c18       0xc2 obj/LUFA-CUR/LUFA/Drivers/USB/Class/Device/CDC.o
+                0x0000000000001c18                CDC_Device_ProcessControlRequest
  .text.Endpoint_WaitUntilReady
-                0x0000000000001cbe       0x56 obj/LUFA-CUR/LUFA/Drivers/USB/LowLevel/Endpoint.o
-                0x0000000000001cbe                Endpoint_WaitUntilReady
+                0x0000000000001cda       0x56 obj/LUFA-CUR/LUFA/Drivers/USB/LowLevel/Endpoint.o
+                0x0000000000001cda                Endpoint_WaitUntilReady
  .text.Endpoint_Write_Control_Stream_LE
-                0x0000000000001d14       0xbc obj/LUFA-CUR/LUFA/Drivers/USB/LowLevel/Endpoint.o
-                0x0000000000001d14                Endpoint_Write_Control_Stream_LE
+                0x0000000000001d30       0xbc obj/LUFA-CUR/LUFA/Drivers/USB/LowLevel/Endpoint.o
+                0x0000000000001d30                Endpoint_Write_Control_Stream_LE
  .text.Endpoint_Read_Control_Stream_LE
-                0x0000000000001dd0       0x82 obj/LUFA-CUR/LUFA/Drivers/USB/LowLevel/Endpoint.o
-                0x0000000000001dd0                Endpoint_Read_Control_Stream_LE
- .text.libgcc   0x0000000000001e52       0x24 /usr/lib/gcc/avr/4.3.2/avr35/libgcc.a(_mulhi3.o)
-                0x0000000000001e52                __mulhi3
- .text.libgcc   0x0000000000001e76       0x32 /usr/lib/gcc/avr/4.3.2/avr35/libgcc.a(_mulsi3.o)
-                0x0000000000001e76                __mulsi3
- .text.libgcc   0x0000000000001ea8       0x28 /usr/lib/gcc/avr/4.3.2/avr35/libgcc.a(_udivmodhi4.o)
-                0x0000000000001ea8                __udivmodhi4
- .text.libgcc   0x0000000000001ed0       0x44 /usr/lib/gcc/avr/4.3.2/avr35/libgcc.a(_udivmodsi4.o)
-                0x0000000000001ed0                __udivmodsi4
- .text.libgcc   0x0000000000001f14       0x36 /usr/lib/gcc/avr/4.3.2/avr35/libgcc.a(_divmodsi4.o)
-                0x0000000000001f14                __divmodsi4
-                0x0000000000001f4a                . = ALIGN (0x2)
+                0x0000000000001dec       0x82 obj/LUFA-CUR/LUFA/Drivers/USB/LowLevel/Endpoint.o
+                0x0000000000001dec                Endpoint_Read_Control_Stream_LE
+ .text.libgcc   0x0000000000001e6e       0x24 /usr/lib/gcc/avr/4.3.2/avr35/libgcc.a(_mulhi3.o)
+                0x0000000000001e6e                __mulhi3
+ .text.libgcc   0x0000000000001e92       0x32 /usr/lib/gcc/avr/4.3.2/avr35/libgcc.a(_mulsi3.o)
+                0x0000000000001e92                __mulsi3
+ .text.libgcc   0x0000000000001ec4       0x28 /usr/lib/gcc/avr/4.3.2/avr35/libgcc.a(_udivmodhi4.o)
+                0x0000000000001ec4                __udivmodhi4
+ .text.libgcc   0x0000000000001eec       0x44 /usr/lib/gcc/avr/4.3.2/avr35/libgcc.a(_udivmodsi4.o)
+                0x0000000000001eec                __udivmodsi4
+ .text.libgcc   0x0000000000001f30       0x36 /usr/lib/gcc/avr/4.3.2/avr35/libgcc.a(_divmodsi4.o)
+                0x0000000000001f30                __divmodsi4
+                0x0000000000001f66                . = ALIGN (0x2)
  *(.fini9)
- .fini9         0x0000000000001f4a        0x0 /usr/lib/gcc/avr/4.3.2/avr35/libgcc.a(_exit.o)
-                0x0000000000001f4a                exit
-                0x0000000000001f4a                _exit
+ .fini9         0x0000000000001f66        0x0 /usr/lib/gcc/avr/4.3.2/avr35/libgcc.a(_exit.o)
+                0x0000000000001f66                exit
+                0x0000000000001f66                _exit
  *(.fini9)
  *(.fini8)
  *(.fini8)
@@ -644,11 +643,11 @@ Address of section .bootloader set to 0x3000
  *(.fini1)
  *(.fini1)
  *(.fini0)
- .fini0         0x0000000000001f4a        0x4 /usr/lib/gcc/avr/4.3.2/avr35/libgcc.a(_exit.o)
+ .fini0         0x0000000000001f66        0x4 /usr/lib/gcc/avr/4.3.2/avr35/libgcc.a(_exit.o)
  *(.fini0)
-                0x0000000000001f4e                _etext = .
+                0x0000000000001f6a                _etext = .
 
-.data           0x0000000000800100       0x30 load address 0x0000000000001f4e
+.data           0x0000000000800100       0x30 load address 0x0000000000001f6a
                 0x0000000000800100                PROVIDE (__data_start, .)
  *(.shareddata)
  .shareddata    0x0000000000800100        0x1 obj/LUFA-CUR/LUFA/Drivers/USB/LowLevel/Endpoint.o
@@ -682,44 +681,44 @@ Address of section .bootloader set to 0x3000
                 0x0000000000800130                _edata = .
                 0x0000000000800130                PROVIDE (__data_end, .)
 
-.bss            0x0000000000800130       0x90 load address 0x0000000000001f7e
+.bss            0x0000000000800130       0xa0 load address 0x0000000000001f9a
                 0x0000000000800130                PROVIDE (__bss_start, .)
  *(.bss)
  .bss           0x0000000000800130        0x1 obj/src/Tamer.o
                 0x0000000000800130                commands
  *(.bss*)
  *(COMMON)
- COMMON         0x0000000000800131       0x5a obj/src/Tamer.o
+ COMMON         0x0000000000800131       0x6a obj/src/Tamer.o
                 0x0000000000800131                USARTtoUSB_Buffer
-                0x000000000080015e                USBtoUSART_Buffer
- COMMON         0x000000000080018b       0x2e obj/src/TamerControl.o
-                0x000000000080018b                CounterHHValue
-                0x000000000080018f                tmp_lmk
-                0x0000000000800193                FilteredVal
-                0x0000000000800197                tmp_r3
-                0x000000000080019b                LastAutoUpd
-                0x000000000080019f                AutoUpdateGps
-                0x00000000008001a0                tmp_r2
-                0x00000000008001a4                Count1PPS
-                0x00000000008001a6                tmp_r0
-                0x00000000008001aa                AutoFreq
-                0x00000000008001ab                LastOCPVal
-                0x00000000008001af                PPS_skipped
-                0x00000000008001b0                tmp_r1
-                0x00000000008001b4                LMK_devider
-                0x00000000008001b5                ddd
- COMMON         0x00000000008001b9        0x7 obj/src/TamerProtocol.o
-                0x00000000008001b9                command
-                0x00000000008001c0                PROVIDE (__bss_end, .)
-                0x0000000000001f4e                __data_load_start = LOADADDR (.data)
-                0x0000000000001f7e                __data_load_end = (__data_load_start + SIZEOF (.data))
+                0x0000000000800166                USBtoUSART_Buffer
+ COMMON         0x000000000080019b       0x2e obj/src/TamerControl.o
+                0x000000000080019b                CounterHHValue
+                0x000000000080019f                tmp_lmk
+                0x00000000008001a3                FilteredVal
+                0x00000000008001a7                tmp_r3
+                0x00000000008001ab                LastAutoUpd
+                0x00000000008001af                AutoUpdateGps
+                0x00000000008001b0                tmp_r2
+                0x00000000008001b4                Count1PPS
+                0x00000000008001b6                tmp_r0
+                0x00000000008001ba                AutoFreq
+                0x00000000008001bb                LastOCPVal
+                0x00000000008001bf                PPS_skipped
+                0x00000000008001c0                tmp_r1
+                0x00000000008001c4                LMK_devider
+                0x00000000008001c5                ddd
+ COMMON         0x00000000008001c9        0x7 obj/src/TamerProtocol.o
+                0x00000000008001c9                command
+                0x00000000008001d0                PROVIDE (__bss_end, .)
+                0x0000000000001f6a                __data_load_start = LOADADDR (.data)
+                0x0000000000001f9a                __data_load_end = (__data_load_start + SIZEOF (.data))
 
-.noinit         0x00000000008001c0        0x0
-                0x00000000008001c0                PROVIDE (__noinit_start, .)
+.noinit         0x00000000008001d0        0x0
+                0x00000000008001d0                PROVIDE (__noinit_start, .)
  *(.noinit*)
-                0x00000000008001c0                PROVIDE (__noinit_end, .)
-                0x00000000008001c0                _end = .
-                0x00000000008001c0                PROVIDE (__heap_start, .)
+                0x00000000008001d0                PROVIDE (__noinit_end, .)
+                0x00000000008001d0                _end = .
+                0x00000000008001d0                PROVIDE (__heap_start, .)
 
 .bootloader     0x0000000000003000      0xee2
  *(.bootvectors)
@@ -1004,27 +1003,27 @@ Address of section .bootloader set to 0x3000
  .debug_pubnames
                 0x0000000000001041       0x63 obj/LUFA-CUR/LUFA/Drivers/USB/HighLevel/USBTask.o
 
-.debug_info     0x0000000000000000     0x5f9b
+.debug_info     0x0000000000000000     0x5fa7
  *(.debug_info)
  .debug_info    0x0000000000000000      0x4d5 obj/src/Tamer.o
  .debug_info    0x00000000000004d5      0x1f8 obj/src/TamerBoard.o
- .debug_info    0x00000000000006cd     0x1000 obj/src/TamerControl.o
- .debug_info    0x00000000000016cd      0x5dc obj/src/TamerProtocol.o
- .debug_info    0x0000000000001ca9      0x686 obj/src/DescriptorsCDC.o
- .debug_info    0x000000000000232f      0x28d obj/src/RingBuff.o
- .debug_info    0x00000000000025bc      0x821 obj/LUFA-CUR/LUFA/Drivers/USB/Class/Device/CDC.o
- .debug_info    0x0000000000002ddd        0x0 obj/LUFA-CUR/LUFA/Drivers/USB/Class/Host/CDC.o
- .debug_info    0x0000000000002ddd     0x1233 obj/LUFA-CUR/LUFA/Drivers/USB/LowLevel/Endpoint.o
- .debug_info    0x0000000000004010        0x0 obj/LUFA-CUR/LUFA/Drivers/USB/LowLevel/Pipe.o
- .debug_info    0x0000000000004010       0x76 obj/LUFA-CUR/LUFA/Drivers/USB/HighLevel/Events.o
- .debug_info    0x0000000000004086      0x341 obj/LUFA-CUR/LUFA/Drivers/USB/HighLevel/ConfigDescriptor.o
- .debug_info    0x00000000000043c7       0x94 obj/src/TamerHwistr.o
- .debug_info    0x000000000000445b      0x538 obj/src/DescriptorsDFU.o
- .debug_info    0x0000000000004993      0xbc7 obj/src/BootloaderDFU.o
- .debug_info    0x000000000000555a      0x458 obj/LUFA-CUR/LUFA/Drivers/USB/LowLevel/DevChapter9.o
- .debug_info    0x00000000000059b2      0x2f2 obj/LUFA-CUR/LUFA/Drivers/USB/LowLevel/LowLevel.o
- .debug_info    0x0000000000005ca4      0x154 obj/LUFA-CUR/LUFA/Drivers/USB/HighLevel/USBInterrupt.o
- .debug_info    0x0000000000005df8      0x1a3 obj/LUFA-CUR/LUFA/Drivers/USB/HighLevel/USBTask.o
+ .debug_info    0x00000000000006cd     0x1006 obj/src/TamerControl.o
+ .debug_info    0x00000000000016d3      0x5e2 obj/src/TamerProtocol.o
+ .debug_info    0x0000000000001cb5      0x686 obj/src/DescriptorsCDC.o
+ .debug_info    0x000000000000233b      0x28d obj/src/RingBuff.o
+ .debug_info    0x00000000000025c8      0x821 obj/LUFA-CUR/LUFA/Drivers/USB/Class/Device/CDC.o
+ .debug_info    0x0000000000002de9        0x0 obj/LUFA-CUR/LUFA/Drivers/USB/Class/Host/CDC.o
+ .debug_info    0x0000000000002de9     0x1233 obj/LUFA-CUR/LUFA/Drivers/USB/LowLevel/Endpoint.o
+ .debug_info    0x000000000000401c        0x0 obj/LUFA-CUR/LUFA/Drivers/USB/LowLevel/Pipe.o
+ .debug_info    0x000000000000401c       0x76 obj/LUFA-CUR/LUFA/Drivers/USB/HighLevel/Events.o
+ .debug_info    0x0000000000004092      0x341 obj/LUFA-CUR/LUFA/Drivers/USB/HighLevel/ConfigDescriptor.o
+ .debug_info    0x00000000000043d3       0x94 obj/src/TamerHwistr.o
+ .debug_info    0x0000000000004467      0x538 obj/src/DescriptorsDFU.o
+ .debug_info    0x000000000000499f      0xbc7 obj/src/BootloaderDFU.o
+ .debug_info    0x0000000000005566      0x458 obj/LUFA-CUR/LUFA/Drivers/USB/LowLevel/DevChapter9.o
+ .debug_info    0x00000000000059be      0x2f2 obj/LUFA-CUR/LUFA/Drivers/USB/LowLevel/LowLevel.o
+ .debug_info    0x0000000000005cb0      0x154 obj/LUFA-CUR/LUFA/Drivers/USB/HighLevel/USBInterrupt.o
+ .debug_info    0x0000000000005e04      0x1a3 obj/LUFA-CUR/LUFA/Drivers/USB/HighLevel/USBTask.o
  *(.gnu.linkonce.wi.*)
 
 .debug_abbrev   0x0000000000000000     0x1983
@@ -1049,27 +1048,27 @@ Address of section .bootloader set to 0x3000
  .debug_abbrev  0x00000000000017d0       0xcc obj/LUFA-CUR/LUFA/Drivers/USB/HighLevel/USBInterrupt.o
  .debug_abbrev  0x000000000000189c       0xe7 obj/LUFA-CUR/LUFA/Drivers/USB/HighLevel/USBTask.o
 
-.debug_line     0x0000000000000000     0x4c34
+.debug_line     0x0000000000000000     0x4c44
  *(.debug_line)
  .debug_line    0x0000000000000000      0x3e5 obj/src/Tamer.o
  .debug_line    0x00000000000003e5      0x323 obj/src/TamerBoard.o
- .debug_line    0x0000000000000708      0xdd7 obj/src/TamerControl.o
- .debug_line    0x00000000000014df      0x288 obj/src/TamerProtocol.o
- .debug_line    0x0000000000001767      0x14b obj/src/DescriptorsCDC.o
- .debug_line    0x00000000000018b2      0x257 obj/src/RingBuff.o
- .debug_line    0x0000000000001b09      0x5cc obj/LUFA-CUR/LUFA/Drivers/USB/Class/Device/CDC.o
- .debug_line    0x00000000000020d5       0x24 obj/LUFA-CUR/LUFA/Drivers/USB/Class/Host/CDC.o
- .debug_line    0x00000000000020f9     0x112f obj/LUFA-CUR/LUFA/Drivers/USB/LowLevel/Endpoint.o
- .debug_line    0x0000000000003228       0x24 obj/LUFA-CUR/LUFA/Drivers/USB/LowLevel/Pipe.o
- .debug_line    0x000000000000324c       0x8b obj/LUFA-CUR/LUFA/Drivers/USB/HighLevel/Events.o
- .debug_line    0x00000000000032d7      0x272 obj/LUFA-CUR/LUFA/Drivers/USB/HighLevel/ConfigDescriptor.o
- .debug_line    0x0000000000003549       0x56 obj/src/TamerHwistr.o
- .debug_line    0x000000000000359f      0x172 obj/src/DescriptorsDFU.o
- .debug_line    0x0000000000003711      0xa28 obj/src/BootloaderDFU.o
- .debug_line    0x0000000000004139      0x3c8 obj/LUFA-CUR/LUFA/Drivers/USB/LowLevel/DevChapter9.o
- .debug_line    0x0000000000004501      0x2a4 obj/LUFA-CUR/LUFA/Drivers/USB/LowLevel/LowLevel.o
- .debug_line    0x00000000000047a5      0x2df obj/LUFA-CUR/LUFA/Drivers/USB/HighLevel/USBInterrupt.o
- .debug_line    0x0000000000004a84      0x1b0 obj/LUFA-CUR/LUFA/Drivers/USB/HighLevel/USBTask.o
+ .debug_line    0x0000000000000708      0xde7 obj/src/TamerControl.o
+ .debug_line    0x00000000000014ef      0x288 obj/src/TamerProtocol.o
+ .debug_line    0x0000000000001777      0x14b obj/src/DescriptorsCDC.o
+ .debug_line    0x00000000000018c2      0x257 obj/src/RingBuff.o
+ .debug_line    0x0000000000001b19      0x5cc obj/LUFA-CUR/LUFA/Drivers/USB/Class/Device/CDC.o
+ .debug_line    0x00000000000020e5       0x24 obj/LUFA-CUR/LUFA/Drivers/USB/Class/Host/CDC.o
+ .debug_line    0x0000000000002109     0x112f obj/LUFA-CUR/LUFA/Drivers/USB/LowLevel/Endpoint.o
+ .debug_line    0x0000000000003238       0x24 obj/LUFA-CUR/LUFA/Drivers/USB/LowLevel/Pipe.o
+ .debug_line    0x000000000000325c       0x8b obj/LUFA-CUR/LUFA/Drivers/USB/HighLevel/Events.o
+ .debug_line    0x00000000000032e7      0x272 obj/LUFA-CUR/LUFA/Drivers/USB/HighLevel/ConfigDescriptor.o
+ .debug_line    0x0000000000003559       0x56 obj/src/TamerHwistr.o
+ .debug_line    0x00000000000035af      0x172 obj/src/DescriptorsDFU.o
+ .debug_line    0x0000000000003721      0xa28 obj/src/BootloaderDFU.o
+ .debug_line    0x0000000000004149      0x3c8 obj/LUFA-CUR/LUFA/Drivers/USB/LowLevel/DevChapter9.o
+ .debug_line    0x0000000000004511      0x2a4 obj/LUFA-CUR/LUFA/Drivers/USB/LowLevel/LowLevel.o
+ .debug_line    0x00000000000047b5      0x2df obj/LUFA-CUR/LUFA/Drivers/USB/HighLevel/USBInterrupt.o
+ .debug_line    0x0000000000004a94      0x1b0 obj/LUFA-CUR/LUFA/Drivers/USB/HighLevel/USBTask.o
 
 .debug_frame    0x0000000000000000      0x880
  *(.debug_frame)
@@ -1090,41 +1089,41 @@ Address of section .bootloader set to 0x3000
  .debug_frame   0x0000000000000820       0x40 obj/LUFA-CUR/LUFA/Drivers/USB/HighLevel/USBInterrupt.o
  .debug_frame   0x0000000000000860       0x20 obj/LUFA-CUR/LUFA/Drivers/USB/HighLevel/USBTask.o
 
-.debug_str      0x0000000000000000     0x2360
+.debug_str      0x0000000000000000     0x2367
  *(.debug_str)
  .debug_str     0x0000000000000000      0x43d obj/src/Tamer.o
                                         0x48d (size before relaxing)
  .debug_str     0x000000000000043d       0xb2 obj/src/TamerBoard.o
                                         0x15a (size before relaxing)
- .debug_str     0x00000000000004ef      0x54c obj/src/TamerControl.o
-                                        0x6a3 (size before relaxing)
- .debug_str     0x0000000000000a3b       0x72 obj/src/TamerProtocol.o
-                                        0x35d (size before relaxing)
- .debug_str     0x0000000000000aad      0x456 obj/src/DescriptorsCDC.o
+ .debug_str     0x00000000000004ef      0x553 obj/src/TamerControl.o
+                                        0x6aa (size before relaxing)
+ .debug_str     0x0000000000000a42       0x72 obj/src/TamerProtocol.o
+                                        0x364 (size before relaxing)
+ .debug_str     0x0000000000000ab4      0x456 obj/src/DescriptorsCDC.o
                                         0x5a3 (size before relaxing)
- .debug_str     0x0000000000000f03       0x79 obj/src/RingBuff.o
+ .debug_str     0x0000000000000f0a       0x79 obj/src/RingBuff.o
                                         0x143 (size before relaxing)
- .debug_str     0x0000000000000f7c      0x33d obj/LUFA-CUR/LUFA/Drivers/USB/Class/Device/CDC.o
+ .debug_str     0x0000000000000f83      0x33d obj/LUFA-CUR/LUFA/Drivers/USB/Class/Device/CDC.o
                                         0x645 (size before relaxing)
- .debug_str     0x00000000000012b9      0x517 obj/LUFA-CUR/LUFA/Drivers/USB/LowLevel/Endpoint.o
+ .debug_str     0x00000000000012c0      0x517 obj/LUFA-CUR/LUFA/Drivers/USB/LowLevel/Endpoint.o
                                         0x841 (size before relaxing)
- .debug_str     0x00000000000017d0       0x3c obj/LUFA-CUR/LUFA/Drivers/USB/HighLevel/Events.o
+ .debug_str     0x00000000000017d7       0x3c obj/LUFA-CUR/LUFA/Drivers/USB/HighLevel/Events.o
                                          0xcc (size before relaxing)
- .debug_str     0x000000000000180c      0x20e obj/LUFA-CUR/LUFA/Drivers/USB/HighLevel/ConfigDescriptor.o
+ .debug_str     0x0000000000001813      0x20e obj/LUFA-CUR/LUFA/Drivers/USB/HighLevel/ConfigDescriptor.o
                                         0x2cc (size before relaxing)
- .debug_str     0x0000000000001a1a       0x12 obj/src/TamerHwistr.o
+ .debug_str     0x0000000000001a21       0x12 obj/src/TamerHwistr.o
                                          0xb6 (size before relaxing)
- .debug_str     0x0000000000001a2c      0x105 obj/src/DescriptorsDFU.o
+ .debug_str     0x0000000000001a33      0x105 obj/src/DescriptorsDFU.o
                                         0x509 (size before relaxing)
- .debug_str     0x0000000000001b31      0x476 obj/src/BootloaderDFU.o
+ .debug_str     0x0000000000001b38      0x476 obj/src/BootloaderDFU.o
                                         0x797 (size before relaxing)
- .debug_str     0x0000000000001fa7      0x26f obj/LUFA-CUR/LUFA/Drivers/USB/LowLevel/DevChapter9.o
+ .debug_str     0x0000000000001fae      0x26f obj/LUFA-CUR/LUFA/Drivers/USB/LowLevel/DevChapter9.o
                                         0x473 (size before relaxing)
- .debug_str     0x0000000000002216       0x7d obj/LUFA-CUR/LUFA/Drivers/USB/LowLevel/LowLevel.o
+ .debug_str     0x000000000000221d       0x7d obj/LUFA-CUR/LUFA/Drivers/USB/LowLevel/LowLevel.o
                                         0x3e4 (size before relaxing)
- .debug_str     0x0000000000002293       0x77 obj/LUFA-CUR/LUFA/Drivers/USB/HighLevel/USBInterrupt.o
+ .debug_str     0x000000000000229a       0x77 obj/LUFA-CUR/LUFA/Drivers/USB/HighLevel/USBInterrupt.o
                                         0x228 (size before relaxing)
- .debug_str     0x000000000000230a       0x56 obj/LUFA-CUR/LUFA/Drivers/USB/HighLevel/USBTask.o
+ .debug_str     0x0000000000002311       0x56 obj/LUFA-CUR/LUFA/Drivers/USB/HighLevel/USBTask.o
                                         0x210 (size before relaxing)
 
 .debug_loc      0x0000000000000000     0x3433
