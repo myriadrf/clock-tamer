@@ -863,23 +863,6 @@ uint8_t ProcessCommand(void)
         {
             switch (command.type)
             {
-#if TAMER_VER >= 12
-                case trgNONE:
-                {
-                    if (command.details == detOSC)
-                    {
-                        if (command.data[0])
-                            EnableOscillator = 1;
-                        else
-                            EnableOscillator = 0;
-
-                        SetOscillator();
-                        FillResultPM(resOk);
-                        return 1;
-                    }
-                    return 0;
-                }
-#endif
                 case trgLMK:
                 {
                     switch (command.details)
@@ -941,6 +924,7 @@ uint8_t ProcessCommand(void)
             switch (command.type)
             {
                 case trgNONE:
+                {
                     switch (command.details)
                     {
                         case trgNONE:
@@ -969,7 +953,24 @@ uint8_t ProcessCommand(void)
                         FillResultPM(resBadRange);
                     }
                     return 1;
+                }
+#if TAMER_VER >= 12
+                case trgIOS:
+                {
+                    if (command.details == detEN)
+                    {
+                        if (command.data[0])
+                            EnableOscillator = 1;
+                        else
+                            EnableOscillator = 0;
 
+                        SetOscillator();
+                        FillResultPM(resOk);
+                        return 1;
+                    }
+                    return 0;
+                }
+#endif
                 case trgVCO:
                     switch (command.details)
                     {
@@ -1053,6 +1054,16 @@ uint8_t ProcessCommand(void)
         {
             switch (command.type)
             {
+#if TAMER_VER >= 12
+                case trgIOS:
+                {
+                    if (command.details == detEN)
+                    {
+                        FillCmd();  FillUint16(EnableOscillator); FillResultNoNewLinePM(newLine); return 1;
+                    }
+                    return 0;
+                }
+#endif
 #ifdef PRESENT_GPS
                 case trgGPS:
                 {

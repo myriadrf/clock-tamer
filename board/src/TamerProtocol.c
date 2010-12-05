@@ -70,7 +70,8 @@ uint8_t pTrg[]        PROGMEM  = "LMK"
                                  "DAC"
                                  "LED"
                                  "VCO"
-                                 "GPS";
+                                 "GPS"
+                                 "IOS";
 
 #define TRG_COUNT    (sizeof(pTrg)  / WORD_SIZE)
 

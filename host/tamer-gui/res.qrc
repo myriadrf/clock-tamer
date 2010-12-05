@@ -1,0 +1,5 @@
+<RCC>
+  <qresource prefix="Tamer" >
+    <file>P-img-small.png</file>
+  </qresource>
+</RCC>
