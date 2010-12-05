@@ -199,7 +199,7 @@ class MainWindow(QtGui.QWidget):
 	#print data
 	
 	if self.oscState:
-	    data = int(self.obj.cbOscDisable.isChecked())
+	    data = int(not self.obj.cbOscDisable.isChecked())
 	    self.dev.setIntOscState(data)
 	    #print data
 	
