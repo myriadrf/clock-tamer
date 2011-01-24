@@ -26,7 +26,7 @@ tamer11_lmk1010 = ("LVDS", "CMOS", "LVDS", None,        "LVDS",   "LVDS",   "CMO
 tamer12_lmk1000 = ("LVDS", "CMOS", None,   "LVPECL",    "LVPECL", "LVPECL", None,   "LVPECL")
 tamer12_lmk1010 = ("LVDS", "CMOS", None,   "LVDS",      "LVDS",   "LVDS",   "CMOS", "LVDS")
 
-tmamer_unknown  = ("unknown", "unknown", "unknown", "unknown", "unknown", "unknown", "unknown", "unknown")
+tamer_unknown  = ("unknown", "unknown", "unknown", "unknown", "unknown", "unknown", "unknown", "unknown")
 
 class MainWindow(QtGui.QWidget):
     def __init__(self, device=None):
@@ -83,7 +83,7 @@ class MainWindow(QtGui.QWidget):
 	elif self.ver == "1.0":
 	    self.outputsConfig = tamer10_lmk1000
 	else:
-	    self.outputsConfig = tmamer_unknown
+	    self.outputsConfig = tamer_unknown
 
 	for i,v in enumerate(self.outputsConfig):
 	    if v == None:
