@@ -26,6 +26,8 @@ tamer11_lmk1010 = ("LVDS", "CMOS", "LVDS", None,        "LVDS",   "LVDS",   "CMO
 tamer12_lmk1000 = ("LVDS", "CMOS", None,   "LVPECL",    "LVPECL", "LVPECL", None,   "LVPECL")
 tamer12_lmk1010 = ("LVDS", "CMOS", None,   "LVDS",      "LVDS",   "LVDS",   "CMOS", "LVDS")
 
+tamer121_lmk1010 = ("LVDS/P+", "CMOS", "GPS",   "LVDS/P+",      "LVDS",   "LVDS",   "CMOS", "LVDS")
+
 tamer_unknown  = ("unknown", "unknown", "unknown", "unknown", "unknown", "unknown", "unknown", "unknown")
 
 class MainWindow(QtGui.QWidget):
@@ -74,7 +76,9 @@ class MainWindow(QtGui.QWidget):
 	self.lmx = int(vals[0].split("=")[1])
 	self.lmk = int(vals[1].split("=")[1])
 	
-	if self.lmk == 1010 and self.ver == "1.2":
+	if self.lmk == 1010 and self.ver == "1.21":
+	    self.outputsConfig = tamer121_lmk1010
+	elif self.lmk == 1010 and self.ver == "1.2":
 	    self.outputsConfig = tamer12_lmk1010
 	elif self.lmk == 1000 and self.ver == "1.2":
 	    self.outputsConfig = tamer12_lmk1010

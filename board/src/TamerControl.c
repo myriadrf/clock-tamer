@@ -165,7 +165,9 @@ static void FillUint16(uint16_t val)
 uint8_t resOk[] PROGMEM = "OK";
 
 #ifndef NO_VERSION
-#if TAMER_VER == 12
+#if TAMER_VER == 121
+uint8_t resVersion[] PROGMEM = "ClockTamer SW=1.21 API=1";
+#elif TAMER_VER == 12
 uint8_t resVersion[] PROGMEM = "ClockTamer SW=1.2 API=1";
 #elif TAMER_VER == 11
 uint8_t resVersion[] PROGMEM = "ClockTamer SW=1.1 API=1";

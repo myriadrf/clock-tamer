@@ -28,6 +28,7 @@
 
 #include "Tamer.h"
 #include "TamerControl.h"
+#include <avr/power.h>
 
 #include <stdio.h>
 

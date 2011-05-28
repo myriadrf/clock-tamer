@@ -10,6 +10,7 @@ import select
 import fcntl
 import array
 import termios
+import time
 from ctypes import cdll, c_int, POINTER
 
 defUsbDevice = "/dev/ttyACM0"
@@ -18,6 +19,9 @@ class UsbDevice(object):
     def __init__(self, devname=defUsbDevice):
         self.devname = devname
         self.dev = open(devname, 'rw+')
+        self.retries=0
+        self.max_retries=1
+
         # turn off echo
         old = termios.tcgetattr(self.dev.fileno())
         old[3] = old[3] & ~termios.ECHO
@@ -59,6 +63,16 @@ class UsbDevice(object):
         res = re.sub("^\s+", "", res)
         res = re.sub("\s+$", "", res)
         print "CMD='%s' RET='%s'" % (string, res)
+        if res == 'SYNTAX ERROR':
+          #sometimes you get a 'SYNTAX ERROR' while the command will succeed if you try again
+          if self.retries <= self.max_retries:
+            self.retries=self.retries+1
+            time.sleep(0.1)
+            return self.sendCmd(cmd, trg, det, val, shouldBeAnswer)
+          else:
+            print "IO ERROR: max_retries reached for command ", cmd
+        else:
+          self.retries=0
 
         return res
 

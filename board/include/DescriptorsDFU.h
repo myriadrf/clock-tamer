@@ -103,6 +103,11 @@
 			#define AVR_SIGNATURE_1               0x1E
 			#define AVR_SIGNATURE_2               0x94
 			#define AVR_SIGNATURE_3               0x82
+		#elif defined(__AVR_ATmega32U2__)
+			#define PRODUCT_ID_CODE               0x2FF0
+			#define AVR_SIGNATURE_1               0x1E
+			#define AVR_SIGNATURE_2               0x95
+			#define AVR_SIGNATURE_3               0x8A
 		#elif defined(__AVR_ATmega8U2__)
 			#define PRODUCT_ID_CODE               0x2FF7
 			#define AVR_SIGNATURE_1               0x1E

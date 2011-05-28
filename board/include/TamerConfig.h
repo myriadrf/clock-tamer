@@ -25,7 +25,7 @@
 
 
 #ifndef TAMER_VER
-#error You should define TAMER_VER (10 stads for 1.0, 11 - 1.1, and 12 - 1.2)
+#error You should define TAMER_VER (10 stads for 1.0, 11 - 1.1, and 12 - 1.2, 121 - 1.21)
 #endif
 
 #if !defined(TAMER_1515_20) && \
@@ -34,7 +34,7 @@
     !defined(TAMER_2080_VCTXCO_26_GPS) && \
     !defined(TAMER_1650_26_GPS)
 
-# if TAMER_VER == 12
+# if (TAMER_VER == 12 || TAMER_VER == 121)
 #  define TAMER_2080_20
 # elif TAMER_VER == 11
 #  define TAMER_1515_20

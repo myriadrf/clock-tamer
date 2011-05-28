@@ -61,9 +61,14 @@
 NODFU?=0
 SDK?=1
 GPS?=1
+TAMER_VER?=12
 
 # MCU name
+ifeq ($(TAMER_VER), 121)
+MCU = atmega32u2
+else
 MCU = at90usb162
+endif
 
 # Target board (see library "Board Types" documentation, USER or blank for projects not requiring
 # LUFA board drivers). If USER is selected, put custom board drivers in a directory called 
@@ -113,6 +118,9 @@ TARGET = $(TARGET_BASE)-sdk-v$(SDK)
 endif
 ifeq ($(NODFU), 1)
 TARGET = $(TARGET_BASE)-nodfu
+FFUSE =
+else
+FFUSE = -U hfuse:w:0xd9:m
 endif
 
 # Object files directory
@@ -265,6 +273,7 @@ CFLAGS += -Wundef
 CFLAGS += -Wa,-adhlns=$(<:%.c=$(OBJDIR)/%.lst)
 CFLAGS += $(patsubst %,-I%,$(EXTRAINCDIRS))
 CFLAGS += $(CSTANDARD)
+CFLAGS += -DTAMER_VER=$(TAMER_VER)
 ifeq ($(NODFU), 0)
 CFLAGS += -D LUFA_DFU_DEVICE_SECTION="__attribute__ ((section (\".bootloader\")))"
 CFLAGS += -D LUFA_SHARED_DATA_SECTION="__attribute__ ((section (\".shareddata\")))"
@@ -609,7 +618,7 @@ gccversion :
 
 # Program the device.  
 program: $(TARGET).hex $(TARGET).eep
-	$(AVRDUDE) $(AVRDUDE_FLAGS) $(AVRDUDE_WRITE_FLASH) $(AVRDUDE_WRITE_EEPROM)
+	$(AVRDUDE) $(AVRDUDE_FLAGS) $(AVRDUDE_WRITE_FLASH) $(AVRDUDE_WRITE_EEPROM) $(FFUSE)
 
 flip: $(TARGET).hex
 	batchisp -hardware usb -device $(MCU) -operation erase f
