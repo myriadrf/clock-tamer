@@ -34,7 +34,7 @@
     !defined(TAMER_2080_VCTXCO_26_GPS) && \
     !defined(TAMER_1650_26_GPS)
 
-# if (TAMER_VER == 12 || TAMER_VER == 121)
+# if (TAMER_VER == 12 || TAMER_VER == 121 || TAMER_VER == 122 || TAMER_VER == 123)
 #  define TAMER_2080_20
 # elif TAMER_VER == 11
 #  define TAMER_1515_20

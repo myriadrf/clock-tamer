@@ -26,7 +26,7 @@ tamer11_lmk1010 = ("LVDS", "CMOS", "LVDS", None,        "LVDS",   "LVDS",   "CMO
 tamer12_lmk1000 = ("LVDS", "CMOS", None,   "LVPECL",    "LVPECL", "LVPECL", None,   "LVPECL")
 tamer12_lmk1010 = ("LVDS", "CMOS", None,   "LVDS",      "LVDS",   "LVDS",   "CMOS", "LVDS")
 
-tamer121_lmk1010 = ("LVDS/P+", "CMOS", "GPS",   "LVDS/P+",      "LVDS",   "LVDS",   "CMOS", "LVDS")
+tamer121_lmk1010 = ("LVDS/P+", "CMOS", None,   "LVDS/P+",      "LVDS",   "LVDS",   "CMOS", "LVDS")
 
 tamer_unknown  = ("unknown", "unknown", "unknown", "unknown", "unknown", "unknown", "unknown", "unknown")
 
@@ -40,17 +40,20 @@ class MainWindow(QtGui.QWidget):
 	self.outCb = (self.obj.cbOut0, self.obj.cbOut1, self.obj.cbOut2, self.obj.cbOut3, 
 	              self.obj.cbOut4, self.obj.cbOut5, self.obj.cbOut6, self.obj.cbOut7)
 
+	spl = self.ParseHWI()
+	
 	self.timer = QTimer(self)
 	self.connect(self.timer,        QtCore.SIGNAL('timeout()'), self.onTimer)
 
-	self.ParseHWI()
 	self.ReadAll()
-	
+
 	self.connect(self.obj.btStore,  QtCore.SIGNAL('clicked()'), self.onStoreEeprom)
 	self.connect(self.obj.btLoad,   QtCore.SIGNAL('clicked()'), self.onLoadEeprom)
 	self.connect(self.obj.btSet,    QtCore.SIGNAL('clicked()'), self.onSet)
 	self.connect(self.obj.btGet,    QtCore.SIGNAL('clicked()'), self.onGet)
 
+	if spl != None:
+	    spl.finish(self)
 
     def onTimer(self):
 	self.onGet()
@@ -76,7 +79,7 @@ class MainWindow(QtGui.QWidget):
 	self.lmx = int(vals[0].split("=")[1])
 	self.lmk = int(vals[1].split("=")[1])
 	
-	if self.lmk == 1010 and self.ver == "1.21":
+	if self.lmk == 1010 and (self.ver == "1.21" or self.ver == "1.22" or self.ver == "1.23" ):
 	    self.outputsConfig = tamer121_lmk1010
 	elif self.lmk == 1010 and self.ver == "1.2":
 	    self.outputsConfig = tamer12_lmk1010
@@ -97,6 +100,55 @@ class MainWindow(QtGui.QWidget):
 	
 	if self.gps == 0:
 	    self.obj.gGps.setVisible(False)
+	elif (self.ver == "1.22" or self.ver == "1.23"):
+	    pxm = QPixmap(":/Tamer/P-img-small.png")
+	    spl = QSplashScreen(pxm)
+	    spl.show();
+	    #app.processEvents();
+	    spl.showMessage("Waiting for GPS...");
+	    #app.processEvents();
+	    gpsid = False
+	    cnt = 15
+	    for j in xrange(cnt):
+		try:
+		    gpsid = self.dev.checkGps()
+		    if gpsid == True:
+			break
+		except:
+		    pass
+		
+		self.dev.flush()
+		time.sleep(1)
+		spl.showMessage("Waiting for GPS %d sec of %d maximum.." % (j + 1, cnt));
+		
+	    
+	    if not gpsid:
+		self.obj.gGps.setTitle("GPS FAILED!")
+		#spl.finish(self)
+		return spl
+		
+	    spl.showMessage("Probing GPS module...");
+	    
+	    cnt = 3
+	    v = ["[failed]","[failed]"]
+	    for k in xrange(2):
+	      for j in xrange(cnt):
+		try:
+		    if k == 0:
+			ver = self.dev.getGpsVer()
+		    else:
+		        ver = self.dev.getGpsFw()
+		    ver = ver[ver.find(',')+1:]
+		    v[k] = ver
+		    break
+		except:
+		    time.sleep(1)
+		    self.dev.flush()
+		    continue
+	    
+	    self.obj.gGps.setTitle("GPS VER='%s' HW='%s'" % (v[0], v[1]))
+	    #spl.finish(self)
+	    return spl
 
     def ReadOutputs(self):
 	data = self.dev.getOutputsMask()
@@ -225,8 +277,13 @@ if __name__ == '__main__':
 #          sys.exit(-1)
 
       qb.show()
+
 #      qb.setGeometry(10, 20, 1440, 900)
 #      qb.setFocus()
-      sys.exit(app.exec_())
+      res = app.exec_()
+      if qb.gps:
+           qb.dev.enterGPS()
+           print "Now you can attach gpsd to you ClockTamer"
+      sys.exit(res)
 
 

@@ -70,6 +70,7 @@ typedef enum tamerCommandType
     cmdRESET,
     cmdLOAD_EEPROM,
     cmdSTORE_EEPROM,
+    cmdGPSMODE,
 } CommandType_t;
 
 /** @brief Internal values of control commands target types.

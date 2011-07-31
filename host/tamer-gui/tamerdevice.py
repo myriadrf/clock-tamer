@@ -30,6 +30,58 @@ class UsbDevice(object):
     def close(self):
         self.dev.close()
 
+    def enterCmd(self):
+        self.dev.write("%" + "\r\n")
+        inputready,outputready,exceptready = select.select([self.dev.fileno()],[],[], 0.5)
+        if len(inputready) != 0:
+            size_int = c_int()
+            try:
+                ret = fcntl.ioctl(self.dev.fileno(), termios.FIONREAD, size_int);
+            except:
+                print "DEVICE ERROR!"
+                return -2
+            print size_int.value
+            res = self.dev.read(size_int.value)
+	    print res
+        return 0
+
+    def sendGPS(self, head, cmd):
+	maxcnt = 100;
+	string = head + cmd
+	res = ""
+	stage = 1
+	print "GPS SEND: '%s'" % string
+        self.dev.write(string + "\r\n")
+
+        for j in xrange(maxcnt):
+          inputready,outputready,exceptready = select.select([self.dev.fileno()],[],[], 0.5)
+          if len(inputready) == 0:
+            print "IO ERROR!"
+            print "sendGPS: IO: '%s' stage = %d" % (res, stage)
+            return -1
+
+          size_int = c_int()
+          try:
+            ret = fcntl.ioctl(self.dev.fileno(), termios.FIONREAD, size_int);
+          except:
+            print "DEVICE ERROR!"
+            return -2
+
+          if size_int.value < 1:
+            continue
+
+          res = res +  self.dev.read(size_int.value)
+          if  stage == 1:
+            pos = res.find(head)
+            if pos != -1:
+              stage = 2
+          elif stage == 2 and (res.find("\n", pos) != -1):
+            res = res[pos:].split("*")[0]
+            print "GPS REPLY: '%s'" % res
+            return res
+            
+        print "sendGPS: FAILED: '%s'" % res
+
     def sendCmd(self, cmd, trg=None, det=None, val=None, shouldBeAnswer=True):
         string = str(cmd)
         if (trg != None):
@@ -92,10 +144,39 @@ class UsbDevice(object):
 class TamerDevice(object):
     def __init__(self, basedevice=UsbDevice()):
 	self.dev = basedevice
+	self.dev.enterCmd()
+	self.dev.enterCmd()
+	self.dev.enterCmd()
 
     # for fulshing buffer in buggy firmware
     def flush(self):
 	return self.dev.sendCmd("\r\n\r\n", None, None, None, False)
+
+    def checkGps(self):
+	self.enterGPS()
+	res = self.dev.sendGPS("$PMTK", "000*32")
+	self.dev.enterCmd()
+	self.dev.enterCmd()
+	self.dev.enterCmd()
+	return res == "$PMTK001,0,3"
+
+    def getGpsVer(self):
+	self.enterGPS()
+	res = self.dev.sendGPS("$PMTK", "604*30")
+	self.dev.enterCmd()
+	self.dev.enterCmd()
+	self.dev.enterCmd()
+	return res
+
+    def getGpsFw(self):
+	self.enterGPS()
+	res = self.dev.sendGPS("$PMTK", "605*31")
+	self.dev.enterCmd()
+	self.dev.enterCmd()
+	self.dev.enterCmd()
+	return res
+
+
 
     def reset(self):
         return self.dev.sendCmd("RST")
@@ -161,3 +242,7 @@ class TamerDevice(object):
 
     def getGpsAut(self):
 	return self.getGps("AUT")
+
+
+    def enterGPS(self):
+	return self.dev.sendCmd("%%%")

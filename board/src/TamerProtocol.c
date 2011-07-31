@@ -62,7 +62,8 @@ uint8_t pCmd[]        PROGMEM  = "REG"
                                  "HWI"
                                  "RST"
                                  "LDE"
-                                 "STE";
+                                 "STE"
+                                 "%%%";
 #define CMD_COUNT    (sizeof(pCmd)  / WORD_SIZE)
 
 uint8_t pTrg[]        PROGMEM  = "LMK"

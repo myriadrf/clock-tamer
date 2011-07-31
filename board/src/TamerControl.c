@@ -165,7 +165,11 @@ static void FillUint16(uint16_t val)
 uint8_t resOk[] PROGMEM = "OK";
 
 #ifndef NO_VERSION
-#if TAMER_VER == 121
+#if TAMER_VER == 123
+uint8_t resVersion[] PROGMEM = "ClockTamer SW=1.23 API=1";
+#elif TAMER_VER == 122
+uint8_t resVersion[] PROGMEM = "ClockTamer SW=1.22 API=1";
+#elif TAMER_VER == 121
 uint8_t resVersion[] PROGMEM = "ClockTamer SW=1.21 API=1";
 #elif TAMER_VER == 12
 uint8_t resVersion[] PROGMEM = "ClockTamer SW=1.2 API=1";
@@ -462,7 +466,7 @@ void TrimClock(void)
 
 #endif
 
-
+extern uint8_t gpsmode;
 extern uint8_t commands;
 extern RingBuff_t USBtoUSART_Buffer;
 extern RingBuff_t USARTtoUSB_Buffer;
@@ -827,6 +831,12 @@ uint8_t ProcessCommand(void)
     {
         case cmdIDLE:
             return 1;
+
+#if (TAMER_VER >= 122) && defined (PRESENT_GPS)
+        case cmdGPSMODE:
+    	    gpsmode = gpsmode ^ 1;
+    	    return 1;
+#endif
 
 #ifndef NO_CMDREG
         case cmdREGISTER:

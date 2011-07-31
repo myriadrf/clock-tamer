@@ -64,10 +64,16 @@ GPS?=1
 TAMER_VER?=12
 
 # MCU name
-ifeq ($(TAMER_VER), 121)
+ifeq ($(TAMER_VER), 121) 
+MCU = atmega32u2
+else
+
+ifeq ($(TAMER_VER), 123) 
 MCU = atmega32u2
 else
 MCU = at90usb162
+endif
+
 endif
 
 # Target board (see library "Board Types" documentation, USER or blank for projects not requiring
