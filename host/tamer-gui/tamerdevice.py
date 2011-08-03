@@ -75,7 +75,7 @@ class UsbDevice(object):
             pos = res.find(head)
             if pos != -1:
               stage = 2
-          elif stage == 2 and (res.find("\n", pos) != -1):
+          if stage == 2 and (res.find("\n", pos) != -1):
             res = res[pos:].split("*")[0]
             print "GPS REPLY: '%s'" % res
             return res
