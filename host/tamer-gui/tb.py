@@ -283,7 +283,7 @@ if __name__ == '__main__':
 #      qb.setFocus()
       res = app.exec_()
       if qb.gps:
-           qb.dev.enterGPS()
+           qb.dev.enterGpsMode()
            print "Now you can attach gpsd to you ClockTamer"
       sys.exit(res)
 

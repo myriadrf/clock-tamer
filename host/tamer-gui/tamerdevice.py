@@ -6,11 +6,10 @@
 import sys
 import string
 import re
-import select
-import fcntl
 import array
 import termios
 import time
+import serial
 from ctypes import cdll, c_int, POINTER
 
 defUsbDevice = "/dev/ttyACM0"
@@ -18,7 +17,7 @@ defUsbDevice = "/dev/ttyACM0"
 class UsbDevice(object):
     def __init__(self, devname=defUsbDevice):
         self.devname = devname
-        self.dev = open(devname, 'rw+')
+        self.dev = serial.Serial(self.devname, 115200, timeout=1)
         self.retries=0
         self.max_retries=1
 
@@ -30,66 +29,44 @@ class UsbDevice(object):
     def close(self):
         self.dev.close()
 
-    def enterCmd(self):
-        self.dev.write("%" + "\r\n")
-        inputready,outputready,exceptready = select.select([self.dev.fileno()],[],[], 0.5)
-        if len(inputready) != 0:
-            size_int = c_int()
-            try:
-                ret = fcntl.ioctl(self.dev.fileno(), termios.FIONREAD, size_int);
-            except:
-                print "DEVICE ERROR!"
-                return -2
-            print size_int.value
-            res = self.dev.read(size_int.value)
-            print res
+    def enterGpsMode(self):
+        ''' Leaves command mode and enables GPS data passing from the GPS module to a host'''
+        string = "%%%"
+        self.dev.write(string + "\r\n")
+        self.dev.readline()
+        self.dev.flushInput()
+        print "CMD='%s' NORET" % (string, )
+        return 0
+
+    def leaveGpsMode(self):
+        ''' Disables GPS data passing from the GPS module to a host and returns to command mode. '''
+        string = "%"
+        self.dev.write(string + "\r\n")
+        self.dev.readline()
+        self.dev.flushInput()
+        print "CMD='%s' NORET" % (string, )
         return 0
 
     def sendGPS(self, head, cmd):
         maxcnt = 100
         string = head + cmd
         res = ""
-        stage = 1
         print "GPS SEND: '%s'" % string
 
-        inputready,outputready,exceptready = select.select([self.dev.fileno()],[],[], 2)
-        if len(inputready) != 0:
-          size_int = c_int()
-          try:
-            ret = fcntl.ioctl(self.dev.fileno(), termios.FIONREAD, size_int);
-          except:
-            print "DEVICE ERROR!"
-            return -2
-
-
+        self.dev.flushInput()
         self.dev.write(string + "\r\n")
 
         for j in xrange(maxcnt):
-          inputready,outputready,exceptready = select.select([self.dev.fileno()],[],[], 2)
-          if len(inputready) == 0:
-            print "IO ERROR!"
-            print "sendGPS: IO: '%s' stage = %d" % (res, stage)
-            return -1
+          res = self.dev.readline()
+          res = re.sub("^\s+", "", res)
+          res = re.sub("\s+$", "", res)
+          print "RAW GPS REPLY: '%s'" % res
 
-          size_int = c_int()
-          try:
-            ret = fcntl.ioctl(self.dev.fileno(), termios.FIONREAD, size_int);
-          except:
-            print "DEVICE ERROR!"
-            return -2
-
-          if size_int.value < 1:
-            continue
-
-          res = res +  self.dev.read(size_int.value)
-          if  stage == 1:
-            pos = res.find(head)
-            if pos != -1:
-              stage = 2
-          if stage == 2 and (res.find("\n", pos) != -1):
-            res = res[pos:].split("*")[0]
-            print "GPS REPLY: '%s'" % res
-            return res
+          pos = res.find(head)
+          if pos != -1:
+              res = res[pos:].split("*")[0]
+              print "GPS REPLY: '%s'" % res
+              return res
 
         print "sendGPS: FAILED: '%s'" % res
 
@@ -103,28 +80,13 @@ class UsbDevice(object):
             string = string + "," + str(val)
 
         self.dev.write(string + "\r\n")
-        inputready,outputready,exceptready = select.select([self.dev.fileno()],[],[], 0.5)
-        if (not shouldBeAnswer) and len(inputready) == 0:
-            return 0
-
-        if len(inputready) == 0:
-            print "IO ERROR!"
-            return -1
-
-        size_int = c_int()
-        try:
-            ret = fcntl.ioctl(self.dev.fileno(), termios.FIONREAD, size_int);
-        except:
-            print "DEVICE ERROR!"
-            return -2
-        #print size_int.value
-        if size_int.value < 2:
-            print "DEVICE READ ERROR!"
-            return -3
-
-        res = self.dev.read(size_int.value)
+        res = self.dev.readline()
         res = re.sub("^\s+", "", res)
         res = re.sub("\s+$", "", res)
+        if (not shouldBeAnswer) and len(res) == 0:
+            print "CMD='%s' NORET" % (string)
+            return 0
+
         print "CMD='%s' RET='%s'" % (string, res)
         if res == 'SYNTAX ERROR':
           #sometimes you get a 'SYNTAX ERROR' while the command will succeed if you try again
@@ -155,36 +117,28 @@ class UsbDevice(object):
 class TamerDevice(object):
     def __init__(self, basedevice=UsbDevice()):
         self.dev = basedevice
-        self.dev.enterCmd()
-        self.dev.enterCmd()
-        self.dev.enterCmd()
+        self.dev.leaveGpsMode()
 
     # for fulshing buffer in buggy firmware
     def flush(self):
         return self.dev.sendCmd("\r\n\r\n", None, None, None, False)
 
     def checkGps(self):
-        self.enterGPS()
+        self.enterGpsMode()
         res = self.dev.sendGPS("$PMTK", "000*32")
-        self.dev.enterCmd()
-        self.dev.enterCmd()
-        self.dev.enterCmd()
+        self.leaveGpsMode()
         return res == "$PMTK001,0,3"
 
     def getGpsVer(self):
-        self.enterGPS()
+        self.enterGpsMode()
         res = self.dev.sendGPS("$PMTK", "604*30")
-        self.dev.enterCmd()
-        self.dev.enterCmd()
-        self.dev.enterCmd()
+        self.leaveGpsMode()
         return res
 
     def getGpsFw(self):
-        self.enterGPS()
+        self.enterGpsMode()
         res = self.dev.sendGPS("$PMTK", "605*31")
-        self.dev.enterCmd()
-        self.dev.enterCmd()
-        self.dev.enterCmd()
+        self.leaveGpsMode()
         return res
 
 
@@ -254,6 +208,8 @@ class TamerDevice(object):
     def getGpsAut(self):
         return self.getGps("AUT")
 
+    def enterGpsMode(self):
+        return self.dev.enterGpsMode()
 
-    def enterGPS(self):
-        return self.dev.sendCmd("%%%")
+    def leaveGpsMode(self):
+        return self.dev.leaveGpsMode()
