@@ -104,9 +104,8 @@ class MainWindow(QtGui.QWidget):
 	    pxm = QPixmap(":/Tamer/P-img-small.png")
 	    spl = QSplashScreen(pxm)
 	    spl.show();
-	    #app.processEvents();
 	    spl.showMessage("Waiting for GPS...");
-	    #app.processEvents();
+	    app.processEvents();
 	    gpsid = False
 	    cnt = 15
 	    for j in xrange(cnt):
@@ -120,6 +119,7 @@ class MainWindow(QtGui.QWidget):
 		self.dev.flush()
 		time.sleep(1)
 		spl.showMessage("Waiting for GPS %d sec of %d maximum.." % (j + 1, cnt));
+		app.processEvents();
 		
 	    
 	    if not gpsid:
@@ -128,6 +128,7 @@ class MainWindow(QtGui.QWidget):
 		return spl
 		
 	    spl.showMessage("Probing GPS module...");
+	    app.processEvents();
 	    
 	    cnt = 3
 	    v = ["[failed]","[failed]"]
