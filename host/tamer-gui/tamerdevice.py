@@ -42,19 +42,30 @@ class UsbDevice(object):
                 return -2
             print size_int.value
             res = self.dev.read(size_int.value)
-	    print res
+            print res
         return 0
 
     def sendGPS(self, head, cmd):
-	maxcnt = 100;
-	string = head + cmd
-	res = ""
-	stage = 1
-	print "GPS SEND: '%s'" % string
+        maxcnt = 100
+        string = head + cmd
+        res = ""
+        stage = 1
+        print "GPS SEND: '%s'" % string
+
+        inputready,outputready,exceptready = select.select([self.dev.fileno()],[],[], 2)
+        if len(inputready) != 0:
+          size_int = c_int()
+          try:
+            ret = fcntl.ioctl(self.dev.fileno(), termios.FIONREAD, size_int);
+          except:
+            print "DEVICE ERROR!"
+            return -2
+
+
         self.dev.write(string + "\r\n")
 
         for j in xrange(maxcnt):
-          inputready,outputready,exceptready = select.select([self.dev.fileno()],[],[], 0.5)
+          inputready,outputready,exceptready = select.select([self.dev.fileno()],[],[], 2)
           if len(inputready) == 0:
             print "IO ERROR!"
             print "sendGPS: IO: '%s' stage = %d" % (res, stage)
@@ -79,7 +90,7 @@ class UsbDevice(object):
             res = res[pos:].split("*")[0]
             print "GPS REPLY: '%s'" % res
             return res
-            
+
         print "sendGPS: FAILED: '%s'" % res
 
     def sendCmd(self, cmd, trg=None, det=None, val=None, shouldBeAnswer=True):
@@ -94,8 +105,8 @@ class UsbDevice(object):
         self.dev.write(string + "\r\n")
         inputready,outputready,exceptready = select.select([self.dev.fileno()],[],[], 0.5)
         if (not shouldBeAnswer) and len(inputready) == 0:
-    	    return 0
-        
+            return 0
+
         if len(inputready) == 0:
             print "IO ERROR!"
             return -1
@@ -143,38 +154,38 @@ class UsbDevice(object):
 
 class TamerDevice(object):
     def __init__(self, basedevice=UsbDevice()):
-	self.dev = basedevice
-	self.dev.enterCmd()
-	self.dev.enterCmd()
-	self.dev.enterCmd()
+        self.dev = basedevice
+        self.dev.enterCmd()
+        self.dev.enterCmd()
+        self.dev.enterCmd()
 
     # for fulshing buffer in buggy firmware
     def flush(self):
-	return self.dev.sendCmd("\r\n\r\n", None, None, None, False)
+        return self.dev.sendCmd("\r\n\r\n", None, None, None, False)
 
     def checkGps(self):
-	self.enterGPS()
-	res = self.dev.sendGPS("$PMTK", "000*32")
-	self.dev.enterCmd()
-	self.dev.enterCmd()
-	self.dev.enterCmd()
-	return res == "$PMTK001,0,3"
+        self.enterGPS()
+        res = self.dev.sendGPS("$PMTK", "000*32")
+        self.dev.enterCmd()
+        self.dev.enterCmd()
+        self.dev.enterCmd()
+        return res == "$PMTK001,0,3"
 
     def getGpsVer(self):
-	self.enterGPS()
-	res = self.dev.sendGPS("$PMTK", "604*30")
-	self.dev.enterCmd()
-	self.dev.enterCmd()
-	self.dev.enterCmd()
-	return res
+        self.enterGPS()
+        res = self.dev.sendGPS("$PMTK", "604*30")
+        self.dev.enterCmd()
+        self.dev.enterCmd()
+        self.dev.enterCmd()
+        return res
 
     def getGpsFw(self):
-	self.enterGPS()
-	res = self.dev.sendGPS("$PMTK", "605*31")
-	self.dev.enterCmd()
-	self.dev.enterCmd()
-	self.dev.enterCmd()
-	return res
+        self.enterGPS()
+        res = self.dev.sendGPS("$PMTK", "605*31")
+        self.dev.enterCmd()
+        self.dev.enterCmd()
+        self.dev.enterCmd()
+        return res
 
 
 
@@ -182,67 +193,67 @@ class TamerDevice(object):
         return self.dev.sendCmd("RST")
 
     def loadEeprom(self):
-	return self.dev.sendCmd("LDE")
+        return self.dev.sendCmd("LDE")
 
     def storeEeprom(self):
-	return self.dev.sendCmd("STE")
+        return self.dev.sendCmd("STE")
 
     def getHwi(self):
-	return self.dev.sendCmd("HWI")
+        return self.dev.sendCmd("HWI")
 #        return self.getStringFromResult(res)
 
     def getVer(self):
-	return self.dev.sendCmd("VER")
+        return self.dev.sendCmd("VER")
 #        return self.getStringFromResult(res)
 
     def setOsc(self, freq=20000000):
-	return self.dev.sendCmd("SET", "", "OSC", freq)
+        return self.dev.sendCmd("SET", "", "OSC", freq)
 
     def setOut(self, freq=52000000):
-	return self.dev.sendCmd("SET", "", "OUT", freq)
+        return self.dev.sendCmd("SET", "", "OUT", freq)
 
     def setAut(self, mode=1):
-	return self.dev.sendCmd("SET", "", "AUT", mode)
+        return self.dev.sendCmd("SET", "", "AUT", mode)
 
     def setOutputsMask(self, mask=255):
-	return self.dev.sendCmd("SET", "LMK", "PRT", mask)
+        return self.dev.sendCmd("SET", "LMK", "PRT", mask)
 
     def setIntOscState(self, enb=1):
-	return self.dev.sendCmd("SET", "IOS", "ENB", enb)
+        return self.dev.sendCmd("SET", "IOS", "ENB", enb)
 
     def setGpsAut(self, mode = 1):
-	return self.dev.sendCmd("SET", "GPS", "AUT", mode)
+        return self.dev.sendCmd("SET", "GPS", "AUT", mode)
 
 
     def getOsc(self):
-	res = self.dev.sendCmd("INF", "", "OSC")
+        res = self.dev.sendCmd("INF", "", "OSC")
         return self.dev.getValueFromResult(res)
 
     def getOut(self):
-	res = self.dev.sendCmd("INF", "", "OUT")
+        res = self.dev.sendCmd("INF", "", "OUT")
         return self.dev.getValueFromResult(res)
 
     def getAut(self):
-	res = self.dev.sendCmd("INF", "", "AUT")
+        res = self.dev.sendCmd("INF", "", "AUT")
         return self.dev.getValueFromResult(res)
 
     def getOutputsMask(self):
-	res = self.dev.sendCmd("INF", "LMK", "PRT")
+        res = self.dev.sendCmd("INF", "LMK", "PRT")
         return self.dev.getValueFromResult(res)
 
     def getIntOscState(self):
-	res = self.dev.sendCmd("INF", "IOS", "ENB")
-	if "ERROR" in res:
-	    return None
+        res = self.dev.sendCmd("INF", "IOS", "ENB")
+        if "ERROR" in res:
+            return None
         return self.dev.getValueFromResult(res)
 
     def getGps(self, reg="R00"):
-	res = self.dev.sendCmd("INF", "GPS", reg)
-	return self.dev.getValueFromResult(res)
+        res = self.dev.sendCmd("INF", "GPS", reg)
+        return self.dev.getValueFromResult(res)
 
     def getGpsAut(self):
-	return self.getGps("AUT")
+        return self.getGps("AUT")
 
 
     def enterGPS(self):
-	return self.dev.sendCmd("%%%")
+        return self.dev.sendCmd("%%%")
