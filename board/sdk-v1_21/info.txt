@@ -1,0 +1,6 @@
+Using built-in specs.
+Target: avr
+Configured with: ../src/configure -v --enable-languages=c,c++ --prefix=/usr/lib --infodir=/usr/share/info --mandir=/usr/share/man --bindir=/usr/bin --libexecdir=/usr/lib --libdir=/usr/lib --enable-shared --with-system-zlib --enable-long-long --enable-nls --without-included-gettext --disable-checking --disable-libssp --build=x86_64-linux-gnu --host=x86_64-linux-gnu --target=avr
+Thread model: single
+gcc version 4.3.5 (GCC) 
+319c3c6badc3+ 62+ default tip
