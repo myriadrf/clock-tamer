@@ -542,7 +542,7 @@
      <item>
       <widget class="QPushButton" name="btLoad">
        <property name="text">
-        <string>Load EEPROM</string>
+        <string>Load from EEPROM</string>
        </property>
       </widget>
      </item>
