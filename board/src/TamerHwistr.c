@@ -47,7 +47,7 @@
 #define HWISTR_OSC      "OSC=" STRINGIFY(TAMER_OSC) " "
 
 #ifdef PRESENT_DAC12
-#define HWISTR_DAC		"VCTXCO "
+#define HWISTR_DAC		"VCTCXO "
 #else
 #define HWISTR_DAC
 #endif
