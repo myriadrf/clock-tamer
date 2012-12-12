@@ -10,6 +10,30 @@ import re
 import array
 if sys.platform != 'win32':
     import termios
+else:
+    import _winreg as winreg
+    import itertools
+
+    def enumerate_tamer_ports():
+        """ Uses the Win32 registry to return an
+            iterator of serial (COM) ports
+            existing on this computer.
+        """
+        path = 'HARDWARE\\DEVICEMAP\\SERIALCOMM'
+        try:
+            key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, path)
+        except WindowsError:
+            raise IterationError
+    
+        for i in itertools.count():
+            try:
+                val = winreg.EnumValue(key, i)
+                print val
+                if val[0].find("USBSER") != -1:
+                    yield str(val[1])
+            except EnvironmentError:
+                break
+        
 import time
 from ctypes import cdll, c_int, POINTER
 
@@ -24,13 +48,21 @@ except:
 if sys.platform != 'win32':
     defUsbDevice = "/dev/ttyACM0"
 else:
-    defUsbDevice = "\\\\.\\COM18"
+    defUsbDevice = [ "\\\\.\\" + i for i in enumerate_tamer_ports() ] # "\\\\.\\COM18"
 
 
 
 class UsbDevice(object):
     def __init__(self, devname=defUsbDevice):
-        self.devname = devname
+        if type([]) == type(devname):
+            if len(devname) == 0:
+                raise "USB Device for tammer isn't founded"
+            else:
+                if len(devname) > 1:
+                    print "More than one USBSER device: ", devname
+                self.devname = devname[0]
+        else:
+            self.devname = devname
         self.dev = serial.Serial(self.devname, 115200, timeout=1)
             
             
