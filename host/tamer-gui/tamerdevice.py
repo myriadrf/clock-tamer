@@ -3,28 +3,45 @@
 
 # td.py
 
+import os
 import sys
 import string
 import re
 import array
-import termios
+if sys.platform != 'win32':
+    import termios
 import time
-import serial
 from ctypes import cdll, c_int, POINTER
 
-defUsbDevice = "/dev/ttyACM0"
+try:
+    import serial
+    serial_found = True
+except:
+    print "Install pyserial"
+    
+
+
+if sys.platform != 'win32':
+    defUsbDevice = "/dev/ttyACM0"
+else:
+    defUsbDevice = "\\\\.\\COM18"
+
+
 
 class UsbDevice(object):
     def __init__(self, devname=defUsbDevice):
         self.devname = devname
         self.dev = serial.Serial(self.devname, 115200, timeout=1)
+            
+            
         self.retries=0
         self.max_retries=1
 
         # turn off echo
-        old = termios.tcgetattr(self.dev.fileno())
-        old[3] = old[3] & ~termios.ECHO
-        termios.tcsetattr(self.dev.fileno(), termios.TCSADRAIN, old)
+        if sys.platform != 'win32':
+            old = termios.tcgetattr(self.dev.fileno())
+            old[3] = old[3] & ~termios.ECHO
+            termios.tcsetattr(self.dev.fileno(), termios.TCSADRAIN, old)
 
     def close(self):
         self.dev.close()
