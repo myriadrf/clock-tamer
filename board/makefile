@@ -61,20 +61,26 @@
 NODFU?=0
 SDK?=1
 GPS?=1
-TAMER_VER?=12
+TAMER_VER?=123
 
 # MCU name
 ifeq ($(TAMER_VER), 121) 
 MCU = atmega32u2
+BOOT_START = 0x7000
 else
 
 ifeq ($(TAMER_VER), 123) 
 MCU = atmega32u2
+BOOT_START = 0x7000
 else
 MCU = at90usb162
+BOOT_START = 0x3000
 endif
 
 endif
+
+
+ARCH = AVR8
 
 # Target board (see library "Board Types" documentation, USER or blank for projects not requiring
 # LUFA board drivers). If USER is selected, put custom board drivers in a directory called 
@@ -96,7 +102,7 @@ BOARD  = USER
 F_CPU = 8000000
 
 
-BOOT_START = 0x3000
+
 
 # Input clock frequency.
 #     This will define a symbol, F_CLOCK, in all source code files equal to the 
@@ -140,7 +146,7 @@ LUFA_PATH = LUFA-CUR
 
 
 # LUFA library compile-time options
-LUFA_OPTS  = -D USB_DEVICE_ONLY
+LUFA_OPTS  = -D USB_DEVICE_ONLY -D F_USB=$(F_CPU) -I$(LUFA_PATH)
 LUFA_OPTS += -D FIXED_NUM_CONFIGURATIONS=1
 LUFA_OPTS += -D USE_FLASH_DESCRIPTORS
 LUFA_OPTS += -D USE_STATIC_OPTIONS="(USB_DEVICE_OPT_FULLSPEED | USB_OPT_REG_ENABLED | USB_OPT_AUTO_PLL)"
@@ -163,7 +169,7 @@ SRC = src/Tamer.c                                                 \
 	  $(LUFA_PATH)/LUFA/Drivers/USB/LowLevel/Endpoint.c           \
  	  $(LUFA_PATH)/LUFA/Drivers/USB/LowLevel/Pipe.c               \
 	  $(LUFA_PATH)/LUFA/Drivers/USB/HighLevel/Events.c            \
-	  $(LUFA_PATH)/LUFA/Drivers/USB/HighLevel/ConfigDescriptor.c  \
+          $(LUFA_PATH)/LUFA/Drivers/USB/HighLevel/ConfigDescriptor.c  \
 
 ifeq ($(NODFU), 1)
 SRC += \
@@ -171,7 +177,9 @@ SRC += \
 	  $(LUFA_PATH)/LUFA/Drivers/USB/LowLevel/DevChapter9.c        \
 	  $(LUFA_PATH)/LUFA/Drivers/USB/LowLevel/LowLevel.c           \
 	  $(LUFA_PATH)/LUFA/Drivers/USB/HighLevel/USBInterrupt.c      \
-	  $(LUFA_PATH)/LUFA/Drivers/USB/HighLevel/USBTask.c           \
+          $(LUFA_PATH)/LUFA/Drivers/USB/HighLevel/USBTask.c           \
+
+#$(LUFA_PATH)/LUFA/Drivers/USB/HighLevel/EndpointStream.c    \
 
 else
 
@@ -184,6 +192,8 @@ SRC += \
 	  $(LUFA_PATH)/LUFA/Drivers/USB/LowLevel/LowLevel.c           \
 	  $(LUFA_PATH)/LUFA/Drivers/USB/HighLevel/USBInterrupt.c      \
 	  $(LUFA_PATH)/LUFA/Drivers/USB/HighLevel/USBTask.c           \
+
+# $(LUFA_PATH)/LUFA/Drivers/USB/HighLevel/EndpointStream.c    \
 
 endif
 
@@ -240,7 +250,7 @@ CSTANDARD = -std=gnu99
 
 
 # Place -D or -U options here for C sources
-CDEFS  = -DF_CPU=$(F_CPU)UL -DF_CLOCK=$(F_CLOCK)UL -DBOARD=BOARD_$(BOARD) $(LUFA_OPTS)
+CDEFS  = -DF_CPU=$(F_CPU)UL -DF_CLOCK=$(F_CLOCK)UL -DBOARD=BOARD_$(BOARD) -DARCH=ARCH_$(ARCH) $(LUFA_OPTS)
 CDEFS += -DBOOT_START_ADDR=$(BOOT_START)UL
 
 # Place -D or -U options here for ASM sources
@@ -739,7 +749,7 @@ extcoff: $(TARGET).elf
 # Link: create ELF output file from object files.
 .SECONDARY : $(TARGET).elf
 .PRECIOUS : $(OBJ)
-%.elf: $(OBJ)
+$(TARGET).elf: $(OBJ)
 	@echo
 	@echo $(MSG_LINKING) $@
 	$(CC) $(ALL_CFLAGS) $^ --output $@ $(LDFLAGS)

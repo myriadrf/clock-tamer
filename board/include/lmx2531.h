@@ -93,6 +93,8 @@
 #define DIV2_ENABLED             1
 
 #define FOLD_DISABLED            0
+#define FOLD_DIGITAL_LOCK        3
+
 
 #define FDM_FRACTIONAL           1
 

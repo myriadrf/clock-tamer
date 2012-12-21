@@ -33,6 +33,12 @@
 #include <util/delay.h>
 #include <avr/eeprom.h>
 
+#define BIND static
+#include "uint64_ops.h"
+
+//////////////////////////////////////
+#define SELF_TESTING
+//////////////////////////////////////
 
 #if   TAMER_VER >= 12
 #define BLINK_1PPS
@@ -244,6 +250,30 @@ uint32_t LastAutoUpd;     //MIN
 uint8_t EnableOscillator = 1;
 #endif
 
+#ifdef SELF_TESTING
+uint8_t VCO_locked = 0;
+#ifdef PRESENT_GPS
+uint8_t GPS_locked = 0;
+#endif
+
+uint8_t SelfStage = 0;
+uint8_t SelfStageMax = 0;
+
+uint32_t SelfMin = 0;
+uint32_t SelfMax = 0;
+uint32_t SelfPrev = 0;
+
+
+#define FOLD_VALUE  FOLD_DIGITAL_LOCK
+
+static inline uint8_t IsVcoLocked()
+{
+    return (PINC & (1<<PC5));
+}
+#else //SELF_TESTING
+#define FOLD_VALUE FOLD_DISABLED
+#endif
+
 #define GPSSYNC_MAX_FREQ        3000000
 
 
@@ -418,9 +448,79 @@ ISR(TIMER1_CAPT_vect, ISR_BLOCK)
 
 ISR(TIMER1_OVF_vect, ISR_BLOCK)
 {
-
     CounterHHValue++;
 }
+
+#ifdef SELF_TESTING
+//uint8_t cnt;
+
+// Will l
+#define SUMM_CNT 128
+
+//Will alarm each 256K Cycles
+ISR(TIMER0_OVF_vect, ISR_BLOCK)
+{
+    if (++SelfStage == SelfStageMax) {
+        SelfStage = 0;
+        uint32_t prev = SelfPrev;
+
+        SelfPrev = TCNT1;
+        SelfPrev |= (CounterHHValue << 16);
+        if (TIFR1 & (1<< TOV1))
+            SelfPrev += 0x010000;
+
+        if (prev == 0) {
+            //Initial
+        } else {
+            uint32_t delta = SelfPrev - prev;
+            if (SelfMin > delta)
+                SelfMin = delta;
+            else if (SelfMax < delta)
+                SelfMax = delta;
+        }
+    }
+}
+
+static void SelfTestFlush()
+{
+    cli();
+    SelfStage = SelfStageMax - 1;
+    SelfPrev = 0;
+    SelfMax = 0;
+    SelfMin = 0xfffffffful;
+    sei();
+}
+
+static void SelfTestStart(uint8_t max)
+{
+    SelfStageMax = max;
+    //SET divider to max
+    TCNT0 = 0;
+    TCCR0B = (1 << CS02) | (1 << CS00); //Freq/1024
+    SelfTestFlush();
+
+    TIMSK0 = 1 << TOIE0;
+}
+static void SelfTestStop()
+{
+    TIMSK0 = 0;
+}
+
+static uint32_t SelfToOutputFreq(uint32_t v)
+{
+    //return 0;
+    //return ((uint64_t)(GpsSync_divider * v) * 8 * 1000000) / (1024 * 256 * SelfStageMax);
+
+    return uint64_div32(uint64_mul32(v, (uint32_t)GpsSync_divider * 8 * 1000000),
+                        (uint32_t)SelfStageMax * 1024 * 256);
+
+}
+
+
+
+
+#endif
+
 
 void UpdateOSCValue(void)
 {
@@ -486,7 +586,7 @@ ISR(SPI_STC_vect, ISR_BLOCK)
    		 	commands++;
 
 		if ((byte != 0) && (byte != 0xff))
-			Buffer_StoreElement(&USBtoUSART_Buffer, byte);
+            Buffer_StoreElement(&USBtoUSART_Buffer, byte);
 //	}
 //	else
 //	{
@@ -518,6 +618,11 @@ void InitLMX2531(void)
 
     LMX2531_WRITE(LMX2531_R12_INIT);
     LMX2531_WRITE(LMX2531_R9_INIT);
+
+#ifdef SELF_TESTING
+    //Turn on digital VCO lock detection
+
+#endif
 }
 
 void InitLMK(void)
@@ -684,13 +789,13 @@ uint8_t SetLMX2531(uint8_t tuneOnly)
         //LMX2531_WRITE( MAKE_R6(CALC_XTSEL(Fosc/1000000), VCO_ACI_SEL_M1, 1, R_40, R_10, R_40, R_10, C3_C4_100_100) );
         LMX2531_WRITE( MAKE_R4(ICP_1X, TOC_DISABLED) );
 #ifdef DEBUG_REGS
-        LMX2531_WRITE(tmp_r3 = MAKE_R3((VCO_MAX > DIVIDER_MAX_FREQ), FDM_FRACTIONAL, DITHER_STRONG, FRAC_ORDER_4, FOLD_DISABLED, den >> 12) );
+        LMX2531_WRITE(tmp_r3 = MAKE_R3((VCO_MAX > DIVIDER_MAX_FREQ), FDM_FRACTIONAL, DITHER_STRONG, FRAC_ORDER_4, FOLD_VALUE, den >> 12) );
         LMX2531_WRITE(tmp_r2 = MAKE_R2(den & 0xFFF, r) );
     }
     LMX2531_WRITE(tmp_r1 = MAKE_R1(ICP_1X, n >> 8, num >> 12) );
     LMX2531_WRITE(tmp_r0 = MAKE_R0(n & 0xFF, num & 0xFFF) );
 #else
-        LMX2531_WRITE( MAKE_R3((VCO_MAX > DIVIDER_MAX_FREQ), FDM_FRACTIONAL, DITHER_STRONG, FRAC_ORDER_4, FOLD_DISABLED, den >> 12) );
+        LMX2531_WRITE( MAKE_R3((VCO_MAX > DIVIDER_MAX_FREQ), FDM_FRACTIONAL, DITHER_STRONG, FRAC_ORDER_4, FOLD_VALUE, den >> 12) );
         LMX2531_WRITE( MAKE_R2(den & 0xFFF, r) );
     }
     //LMX2531_WRITE( MAKE_R1(ICP_1X, n >> 8, num >> 12) );
@@ -1056,6 +1161,22 @@ uint8_t ProcessCommand(void)
                     return 1;
                 }
 #endif
+#ifdef SELF_TESTING
+                case trgSTS:
+                {
+                    if (command.data[0] == 0)
+                        SelfTestStop();
+                    else if (command.data[0] < 128)
+                        SelfTestStart(command.data[0]);
+                    else {
+                        FillResultPM(resBadRange);
+                        return 1;
+                    }
+
+                    FillResultPM(resOk);
+                    return 1;
+                }
+#endif
                 default:
                     return 0;
             }
@@ -1122,6 +1243,9 @@ uint8_t ProcessCommand(void)
                         case detR03:   FillCmd();  FillUint32(tmp_r3);      FillResultNoNewLinePM(newLine); break;
                         case detEN:    FillCmd();  FillUint32(tmp_lmk);     FillResultNoNewLinePM(newLine); break;
 #endif
+#ifdef SELF_TESTING
+                        case detLCK:   FillCmd();  FillUint32(IsVcoLocked() ? 1 : 0);     FillResultNoNewLinePM(newLine); break;
+#endif //SELF_TESTING
                         default: return 0;
                     }
                     return 1;
@@ -1141,7 +1265,23 @@ uint8_t ProcessCommand(void)
 #ifdef PRESENT_DAC12
                 case trgDAC:  FillCmd();  FillUint16(DacValue);  FillResultNoNewLinePM(newLine); return 1;
 #endif
+#ifdef SELF_TESTING
+                case trgSTS:
+                {
+                    switch (command.details)
+                    {
+                        case detMAX: FillCmd();   FillUint32(SelfMax);  FillResultNoNewLinePM(newLine); break;
+                        case detMIN: FillCmd();   FillUint32(SelfMin);  FillResultNoNewLinePM(newLine); break;
+                        case detR01: { int32_t tmp; cli(); tmp = SelfMax - SelfMin; sei(); FillCmd(); FillUint32(tmp);  FillResultNoNewLinePM(newLine); break; }
 
+                        case detR02: FillCmd(); FillUint32(SelfToOutputFreq(SelfMax));  FillResultNoNewLinePM(newLine); break;
+                        case detR03: FillCmd(); FillUint32(SelfToOutputFreq(SelfMin));  FillResultNoNewLinePM(newLine); break;
+
+                        default: return 0;
+                    }
+                    return 1;
+                }
+#endif
                 default:
                   return 0;
             }

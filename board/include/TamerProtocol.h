@@ -88,8 +88,8 @@ typedef enum tamerTargetType
     trgLED,
     trgVCO,
     trgGPS,
-    trgIOS
-
+    trgIOS,
+    trgSTS
 } TargetType_t;
 
 /** @brief Internal values of control commands target details.
@@ -117,6 +117,7 @@ typedef enum tamerTargetDetails
     detR01,
     detR02,
     detR03,
+    detLCK
 } TargetDetails_t;
 
 /** @brief Internal (decoded) command representation.
