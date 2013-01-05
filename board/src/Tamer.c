@@ -106,6 +106,19 @@ void USART_vInit(void)
     UCSR1B = (1<<RXEN1)|(1<<TXEN1);
 }
 
+void DoExtraTasks(uint8_t dosend)
+{
+    if (dosend && USB_DeviceState == DEVICE_STATE_Configured)
+    {
+        /* Read bytes from the USART receive buffer into the USB IN endpoint */
+        while (USARTtoUSB_Buffer.Elements)
+            CDC_Device_SendByte(&VirtualSerial_CDC_Interface, Buffer_GetElement(&USARTtoUSB_Buffer));
+    }
+
+    CDC_Device_USBTask(&VirtualSerial_CDC_Interface);
+    USB_USBTask();
+}
+
 int main(void)
 {
 #if TAMER_VER >= 12

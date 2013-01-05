@@ -61,6 +61,13 @@
 #define DEBUG_REGS
 
 
+#define DIVIDER_MAX_FREQ        1500
+//#define DIVIDER_MAX_FREQ        1590
+
+#define den_bit                 21
+#define den         ((uint32_t)1 << den_bit)
+
+
 uint8_t SetLMX2531(uint8_t tuneOnly);
 
 extern TamerCommand_t command;
@@ -274,6 +281,7 @@ static inline uint8_t IsVcoLocked()
 #define FOLD_VALUE FOLD_DISABLED
 #endif
 
+//#define GPSSYNC_MAX_FREQ        3000000
 #define GPSSYNC_MAX_FREQ        3000000
 
 
@@ -461,13 +469,13 @@ ISR(TIMER1_OVF_vect, ISR_BLOCK)
 ISR(TIMER0_OVF_vect, ISR_BLOCK)
 {
     if (++SelfStage == SelfStageMax) {
-        SelfStage = 0;
         uint32_t prev = SelfPrev;
-
         SelfPrev = TCNT1;
-        SelfPrev |= (CounterHHValue << 16);
+        SelfPrev |= (CounterHHValue << 16);        
         if (TIFR1 & (1<< TOV1))
             SelfPrev += 0x010000;
+
+        SelfStage = 0;
 
         if (prev == 0) {
             //Initial
@@ -517,7 +525,160 @@ static uint32_t SelfToOutputFreq(uint32_t v)
 }
 
 
+/**
+ * @brief SelfTestLockPin
+ * @return 1 - Ok, 0 - Pin FOLD doesn't work
+ */
+static uint8_t SelfTestLockPin()
+{
+    uint8_t res;
 
+    LMX2531_WRITE( MAKE_R3((VCO_MAX > DIVIDER_MAX_FREQ), FDM_FRACTIONAL, DITHER_STRONG, FRAC_ORDER_4, FOLD_DIGITAL_LOW,  den >> 12) );
+    _delay_ms(10);
+
+    res = !IsVcoLocked(); //Must be low
+
+    LMX2531_WRITE( MAKE_R3((VCO_MAX > DIVIDER_MAX_FREQ), FDM_FRACTIONAL, DITHER_STRONG, FRAC_ORDER_4, FOLD_DIGITAL_HIGH,  den >> 12) );
+    _delay_ms(10);
+
+    res = res && IsVcoLocked(); //Must be high
+
+    LMX2531_WRITE( MAKE_R3((VCO_MAX > DIVIDER_MAX_FREQ), FDM_FRACTIONAL, DITHER_STRONG, FRAC_ORDER_4, FOLD_DIGITAL_LOCK,  den >> 12) );
+    return res;
+}
+
+uint8_t stPragma[] PROGMEM = "SEL,F_T,EST,";
+uint8_t stLck[]  PROGMEM = "lock pin,";
+uint8_t stFreq[]  PROGMEM = "set freq,";
+uint8_t stCntd[]  PROGMEM = "counted,";
+uint8_t stComma[] PROGMEM = ",";
+uint8_t resFailed[]  PROGMEM = "FAILED";
+void DoExtraTasks(uint8_t dosend);
+
+
+uint16_t GetAbsDelta(uint32_t orig, uint32_t mes)
+{
+    if (orig < mes)
+        return GetAbsDelta(mes, orig);
+
+    uint32_t diff = (orig-mes) * 10000;
+    return (diff / orig);
+}
+
+/**
+ * @brief SelfTestFull Full self testing without GPS
+ * @return 0 - Ok, otherwise - number of failed tests
+ *
+ * 1. Check LOCK ping
+ * 2. For 10 Mhz, 13.38 Mhz, 40.96 Mhz, 52 Mhz, 96 Mhz
+ *  a. Set freqency
+ *  b. Check lock state
+ *  c. Count freqency using local oscillator
+ */
+static uint8_t SelfTestFull()
+{
+    FillResultNoNewLinePM(stPragma);
+    FillResultNoNewLinePM(stLck);
+    if (!SelfTestLockPin()) {
+        FillResultPM(resFailed);
+        return 0;
+    }
+    FillResultPM(resOk);
+
+    const uint32_t freqs[] = {10000000, 13380000, 40960000, 49000000, 50000000, 51000000, 52000000, 53000000, 54000000, 55000000, 56000000, 96000000};
+    const uint8_t accums[] = {2, 8, 32};
+
+    uint8_t i;
+    uint8_t failed = 0;
+
+    for (i = 0; i < (sizeof(freqs)/sizeof(freqs[0])); i++) {
+        DoExtraTasks(1);
+
+        FillResultNoNewLinePM(stPragma);
+        FillResultNoNewLinePM(stFreq);
+
+        Fout = freqs[i];
+        FillUint32(Fout);
+
+        SetLMX2531(0);
+        SetLMK();
+
+        _delay_ms(250);
+
+        if (IsVcoLocked()) {
+            FillResultNoNewLinePM(stComma);
+            FillResultPM(resOk);
+
+            uint8_t j;
+            // Compute frequency
+            for (j = 0; j < (sizeof(accums)/sizeof(accums[0])); j++) {
+                DoExtraTasks(1);
+
+                SelfTestStart(accums[j]);
+                uint8_t k;
+                for (k = 0; k < accums[j]; k++) {
+                    _delay_ms(97);
+                    //DoExtraTasks(1);
+                }
+                SelfTestStop();
+                FillResultNoNewLinePM(stPragma);
+                FillResultNoNewLinePM(stCntd);
+                FillUint16(accums[j]);
+                FillResultNoNewLinePM(stComma);
+
+#if 0
+                DoExtraTasks(1);
+                FillUint32(SelfMin);
+                FillResultNoNewLinePM(stComma);
+                FillUint32(SelfMax);
+                FillResultNoNewLinePM(stComma);
+#endif
+                DoExtraTasks(1);
+
+                uint32_t cmax = SelfToOutputFreq(SelfMax);
+                uint32_t cmin = SelfToOutputFreq(SelfMin);
+
+                FillUint32(cmin);
+                FillResultNoNewLinePM(stComma);
+                FillUint32(cmax);
+                FillResultNoNewLinePM(stComma);
+                //FillResultPM(stComma);
+
+#if 0
+                DoExtraTasks(1);
+                FillUint16(GetAbsDelta(Fout, cmin));
+                FillResultNoNewLinePM(stComma);
+                FillUint16(GetAbsDelta(Fout, cmax));
+                FillResultPM(stComma);
+#endif
+                uint16_t erra = GetAbsDelta(Fout, cmin);
+                uint16_t errb = GetAbsDelta(Fout, cmax);
+                uint32_t cerr = erra*erra + errb*errb;
+                if (cerr < 1000) {
+                    //SQRT error less than ~300ppm
+                    FillResultPM(resOk);
+                } else {
+                    FillResultPM(resFailed);
+                    failed++;
+                }
+
+                //CheckDelta
+                // 1000*(Orig-Mesured)/Orig
+            }
+
+        } else {
+            FillResultNoNewLinePM(stComma);
+            FillResultPM(resFailed);
+
+            failed++;
+        }
+
+        //Check lock status
+
+    }
+
+    return failed;
+}
 
 #endif
 
@@ -636,11 +797,7 @@ void InitLMK(void)
 
 
 
-#define den_bit                 21
-#define den         ((uint32_t)1 << den_bit)
 
-#define DIVIDER_MAX_FREQ        1500
-//#define DIVIDER_MAX_FREQ        1590
 
 inline static void SetLMX2531_R7(uint16_t fosc)
 {
@@ -1164,13 +1321,21 @@ uint8_t ProcessCommand(void)
 #ifdef SELF_TESTING
                 case trgSTS:
                 {
-                    if (command.data[0] == 0)
-                        SelfTestStop();
-                    else if (command.data[0] < 128)
-                        SelfTestStart(command.data[0]);
-                    else {
-                        FillResultPM(resBadRange);
-                        return 1;
+                    switch (command.details)
+                    {
+                    case detSYN:
+                        FillCmd();  FillUint16(SelfTestLockPin());      FillResultNoNewLinePM(newLine); return 1;
+                    case detAUTO:
+                        SelfTestFull(); return 1;
+                    default:
+                        if (command.data[0] == 0)
+                            SelfTestStop();
+                        else if (command.data[0] < 128)
+                            SelfTestStart(command.data[0]);
+                        else {
+                            FillResultPM(resBadRange);
+                            return 1;
+                        }
                     }
 
                     FillResultPM(resOk);
