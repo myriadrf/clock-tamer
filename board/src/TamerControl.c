@@ -489,7 +489,7 @@ ISR(TIMER0_OVF_vect, ISR_BLOCK)
     }
 }
 
-static void SelfTestFlush()
+static void SelfTestFlush(void)
 {
     cli();
     SelfStage = SelfStageMax - 1;
@@ -509,7 +509,7 @@ static void SelfTestStart(uint8_t max)
 
     TIMSK0 = 1 << TOIE0;
 }
-static void SelfTestStop()
+static void SelfTestStop(void)
 {
     TIMSK0 = 0;
 }
@@ -529,7 +529,7 @@ static uint32_t SelfToOutputFreq(uint32_t v)
  * @brief SelfTestLockPin
  * @return 1 - Ok, 0 - Pin FOLD doesn't work
  */
-static uint8_t SelfTestLockPin()
+static uint8_t SelfTestLockPin(void)
 {
     uint8_t res;
 
@@ -561,7 +561,12 @@ uint16_t GetAbsDelta(uint32_t orig, uint32_t mes)
     if (orig < mes)
         return GetAbsDelta(mes, orig);
 
-    uint32_t diff = (orig-mes) * 10000;
+    uint32_t diff = (orig-mes);
+    // Check for the overflow on the next step
+    if (diff > 400000)
+        return 10000;
+
+    diff  = diff * 10000;
     return (diff / orig);
 }
 
@@ -575,21 +580,24 @@ uint16_t GetAbsDelta(uint32_t orig, uint32_t mes)
  *  b. Check lock state
  *  c. Count freqency using local oscillator
  */
-static uint8_t SelfTestFull()
+static uint8_t SelfTestFull(void)
 {
+    uint8_t failed = 0;
+
     FillResultNoNewLinePM(stPragma);
     FillResultNoNewLinePM(stLck);
     if (!SelfTestLockPin()) {
         FillResultPM(resFailed);
-        return 0;
+        failed = 100;
+        goto exit_fill_failed;
+    } else {
+        FillResultPM(resOk);
     }
-    FillResultPM(resOk);
 
     const uint32_t freqs[] = {10000000, 13380000, 40960000, 49000000, 50000000, 51000000, 52000000, 53000000, 54000000, 55000000, 56000000, 96000000};
     const uint8_t accums[] = {2, 8, 32};
 
     uint8_t i;
-    uint8_t failed = 0;
 
     for (i = 0; i < (sizeof(freqs)/sizeof(freqs[0])); i++) {
         DoExtraTasks(1);
@@ -653,7 +661,7 @@ static uint8_t SelfTestFull()
 #endif
                 uint16_t erra = GetAbsDelta(Fout, cmin);
                 uint16_t errb = GetAbsDelta(Fout, cmax);
-                uint32_t cerr = erra*erra + errb*errb;
+                uint32_t cerr = (uint32_t)erra*erra + (uint32_t)errb*errb;
                 if (cerr < 1000) {
                     //SQRT error less than ~300ppm
                     FillResultPM(resOk);
@@ -676,6 +684,13 @@ static uint8_t SelfTestFull()
         //Check lock status
 
     }
+
+ exit_fill_failed:
+    DoExtraTasks(1);
+
+    FillResultNoNewLinePM(stPragma);
+    FillUint16(failed);
+    FillResultNoNewLinePM(newLine);
 
     return failed;
 }
