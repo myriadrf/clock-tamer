@@ -44,17 +44,16 @@
 		#include <avr/pgmspace.h>
 
 		#include <LUFA/Drivers/USB/USB.h>
-		#include <LUFA/Drivers/USB/Class/CDC.h>
 
 	/* Macros: */
 		/** Endpoint number of the CDC device-to-host notification IN endpoint. */
-		#define CDC_NOTIFICATION_EPNUM         2
+		#define CDC_NOTIFICATION_EPADDR        (ENDPOINT_DIR_IN  |  2)
 
 		/** Endpoint number of the CDC device-to-host data IN endpoint. */
-		#define CDC_TX_EPNUM                   3	
+		#define CDC_TX_EPADDR                  (ENDPOINT_DIR_IN  |  3)
 
 		/** Endpoint number of the CDC host-to-device data OUT endpoint. */
-		#define CDC_RX_EPNUM                   4	
+		#define CDC_RX_EPADDR                  (ENDPOINT_DIR_OUT |  4)
 
 		/** Size in bytes of the CDC device-to-host notification IN endpoint. */
 		#define CDC_NOTIFICATION_EPSIZE        8
@@ -78,15 +77,16 @@
 		typedef struct
 		{
 			USB_Descriptor_Configuration_Header_t    Config;
-			USB_Descriptor_Interface_t               CCI_Interface;
-			CDC_FUNCTIONAL_DESCRIPTOR(2)             CDC_Functional_IntHeader;
-			CDC_FUNCTIONAL_DESCRIPTOR(2)             CDC_Functional_CallManagement;
-			CDC_FUNCTIONAL_DESCRIPTOR(1)             CDC_Functional_AbstractControlManagement;
-			CDC_FUNCTIONAL_DESCRIPTOR(2)             CDC_Functional_Union;
-			USB_Descriptor_Endpoint_t                ManagementEndpoint;
-			USB_Descriptor_Interface_t               DCI_Interface;
-			USB_Descriptor_Endpoint_t                DataOutEndpoint;
-			USB_Descriptor_Endpoint_t                DataInEndpoint;
+			// CDC Control Interface
+			USB_Descriptor_Interface_t               CDC_CCI_Interface;
+			USB_CDC_Descriptor_FunctionalHeader_t    CDC_Functional_Header;
+			USB_CDC_Descriptor_FunctionalACM_t       CDC_Functional_ACM;
+			USB_CDC_Descriptor_FunctionalUnion_t     CDC_Functional_Union;
+			USB_Descriptor_Endpoint_t                CDC_NotificationEndpoint;
+			// CDC Data Interface
+			USB_Descriptor_Interface_t               CDC_DCI_Interface;
+			USB_Descriptor_Endpoint_t                CDC_DataOutEndpoint;
+			USB_Descriptor_Endpoint_t                CDC_DataInEndpoint;
 		} USB_Descriptor_Configuration_t;
 
 	/* Function Prototypes: */

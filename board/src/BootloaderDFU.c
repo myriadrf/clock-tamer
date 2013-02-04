@@ -101,6 +101,13 @@ uint16_t StartAddr DFU_DATA  = 0x0000;
 uint16_t EndAddr DFU_DATA  = 0x0000;
 
 
+#define Endpoint_Discard_Byte  Endpoint_Discard_8
+#define Endpoint_Read_Byte     Endpoint_Read_8
+#define Endpoint_Write_Byte    Endpoint_Write_8
+#define Endpoint_Read_Word_LE  Endpoint_Read_16_LE
+#define Endpoint_Write_Word_LE Endpoint_Write_16_LE
+#define USB_ShutDown           USB_Disable
+
 DFU_SECTION void EVENT_USB_Device_Connect(void)
 {
     if (!RunBootloader)
@@ -194,6 +201,9 @@ DFU_SECTION void bootmain(void)
     AppStartPtr();
 }
 
+#if (!defined(FIXED_CONTROL_ENDPOINT_SIZE))
+	extern uint8_t USB_ControlEndpointSize;
+#endif
 /** Configures all hardware required for the bootloader. */
 DFU_SECTION void SetupHardwareDFU(void)
 {

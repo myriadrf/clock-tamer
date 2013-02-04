@@ -32,6 +32,7 @@
 #include <avr/io.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <util/delay.h>
 
 #define SPI_ENABLED
 
@@ -51,18 +52,24 @@ USB_ClassInfo_CDC_Device_t VirtualSerial_CDC_Interface =
 		.Config = 
 			{
 				.ControlInterfaceNumber         = 0,
-
-				.DataINEndpointNumber           = CDC_TX_EPNUM,
-				.DataINEndpointSize             = CDC_TXRX_EPSIZE,
-				.DataINEndpointDoubleBank       = false,
-
-				.DataOUTEndpointNumber          = CDC_RX_EPNUM,
-				.DataOUTEndpointSize            = CDC_TXRX_EPSIZE,
-				.DataOUTEndpointDoubleBank      = false,
-
-				.NotificationEndpointNumber     = CDC_NOTIFICATION_EPNUM,
-				.NotificationEndpointSize       = CDC_NOTIFICATION_EPSIZE,
-				.NotificationEndpointDoubleBank = false,
+				.DataINEndpoint                 =
+					{
+						.Address          = CDC_TX_EPADDR,
+						.Size             = CDC_TXRX_EPSIZE,
+						.Banks            = 1,
+					},
+				.DataOUTEndpoint =
+					{
+						.Address          = CDC_RX_EPADDR,
+						.Size             = CDC_TXRX_EPSIZE,
+						.Banks            = 1,
+					},
+				.NotificationEndpoint =
+					{
+						.Address          = CDC_NOTIFICATION_EPADDR,
+						.Size             = CDC_NOTIFICATION_EPSIZE,
+						.Banks            = 1,
+					},
 			},
 	};
 
@@ -114,6 +121,10 @@ void DoExtraTasks(uint8_t dosend)
         while (USARTtoUSB_Buffer.Elements)
             CDC_Device_SendByte(&VirtualSerial_CDC_Interface, Buffer_GetElement(&USARTtoUSB_Buffer));
     }
+	else if (dosend && USB_DeviceState != DEVICE_STATE_Configured)
+	{
+		_delay_ms(100); //wait to flush spi buffer
+	}
 
     CDC_Device_USBTask(&VirtualSerial_CDC_Interface);
     USB_USBTask();
@@ -257,7 +268,10 @@ int main(void)
 }
 
 
-
+#if (!defined(FIXED_CONTROL_ENDPOINT_SIZE))
+extern uint8_t USB_ControlEndpointSize;
+#endif
+    
 /** Configures the board hardware and chip peripherals for the demo's functionality. */
 void SetupHardware(void)
 {

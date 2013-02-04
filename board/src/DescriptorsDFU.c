@@ -83,7 +83,7 @@ USB_Descriptor_Configuration_t DFU_CONST ConfigurationDescriptorDFU =
 			.ConfigurationNumber      = 1,
 			.ConfigurationStrIndex    = NO_DESCRIPTOR,
 				
-			.ConfigAttributes         = (USB_CONFIG_ATTR_BUSPOWERED | USB_CONFIG_ATTR_SELFPOWERED),
+			.ConfigAttributes         = (USB_CONFIG_ATTR_RESERVED | USB_CONFIG_ATTR_SELFPOWERED),
 			
 			.MaxPowerConsumption      = USB_CONFIG_POWER_MA(100)
 		},
@@ -148,12 +148,12 @@ extern bool RunBootloader;
  *  USB host.
  */
 
-DFU_SECTION uint16_t CALLBACK_USER_USB_GetDescriptor(const uint16_t wValue, const uint8_t wIndex, void** const DescriptorAddress)
+DFU_SECTION uint16_t CALLBACK_USER_USB_GetDescriptor(const uint16_t wValue, const uint8_t wIndex, const void** const DescriptorAddress)
 {
     JMP_TRAP(TR_USB_GETDESCRIPTOR);
 }
 
-DFU_SECTION uint16_t CALLBACK_USB_GetDescriptor(const uint16_t wValue, const uint8_t wIndex, void** const DescriptorAddress)
+DFU_SECTION uint16_t CALLBACK_USB_GetDescriptor(const uint16_t wValue, const uint8_t wIndex, const void** const DescriptorAddress)
 {
     if (!RunBootloader)
     {

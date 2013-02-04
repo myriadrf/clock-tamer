@@ -64,11 +64,11 @@ USB_Descriptor_Device_t PROGMEM DeviceDescriptor =
 	.SubClass               = 0x00,
 	.Protocol               = 0x00,
 
-    .Endpoint0Size          = CDC_CONTROL_ENDPOINT_SIZE,
+    	.Endpoint0Size          = CDC_CONTROL_ENDPOINT_SIZE,
 		
 	.VendorID               = 0x03EB,
 	.ProductID              = 0x204B,
-	.ReleaseNumber          = 0x0000,
+	.ReleaseNumber          = VERSION_BCD(00.01),
 		
 	.ManufacturerStrIndex   = 0x01,
 	.ProductStrIndex        = 0x02,
@@ -94,12 +94,12 @@ USB_Descriptor_Configuration_t PROGMEM ConfigurationDescriptor =
 			.ConfigurationNumber    = 1,
 			.ConfigurationStrIndex  = NO_DESCRIPTOR,
 				
-			.ConfigAttributes       = (USB_CONFIG_ATTR_BUSPOWERED | USB_CONFIG_ATTR_SELFPOWERED),
+			.ConfigAttributes       = (USB_CONFIG_ATTR_RESERVED | USB_CONFIG_ATTR_SELFPOWERED),
 			
 			.MaxPowerConsumption    = USB_CONFIG_POWER_MA(100)
 		},
 		
-	.CCI_Interface = 
+	.CDC_CCI_Interface = 
 		{
 			.Header                 = {.Size = sizeof(USB_Descriptor_Interface_t), .Type = DTYPE_Interface},
 
@@ -120,53 +120,42 @@ USB_Descriptor_Configuration_t PROGMEM ConfigurationDescriptor =
 			.InterfaceStrIndex      = NO_DESCRIPTOR
 		},
 
-	.CDC_Functional_IntHeader = 
+	.CDC_Functional_Header = 
 		{
-			.Header                 = {.Size = sizeof(CDC_FUNCTIONAL_DESCRIPTOR(2)), .Type = 0x24},
-			.SubType                = 0x00,
-			
-			.Data                   = {0x01, 0x10}
+			.Header                 = {.Size = sizeof(USB_CDC_Descriptor_FunctionalHeader_t), .Type = DTYPE_CSInterface},
+			.Subtype                = CDC_DSUBTYPE_CSInterface_Header,
+			.CDCSpecification       = VERSION_BCD(01.10)
 		},
 
-	.CDC_Functional_CallManagement = 
+	.CDC_Functional_ACM =
 		{
-			.Header                 = {.Size = sizeof(CDC_FUNCTIONAL_DESCRIPTOR(2)), .Type = 0x24},
-			.SubType                = 0x01,
+			.Header                 = {.Size = sizeof(USB_CDC_Descriptor_FunctionalACM_t), .Type = DTYPE_CSInterface},
+			.Subtype                = CDC_DSUBTYPE_CSInterface_ACM,
 
-#ifdef AT_COMMANDS
-			.Data                   = {0x03, 0x01}
-#else
-			.Data                   = {0x00, 0x01}
-#endif
+			.Capabilities           = 0x06,
 		},
 
-	.CDC_Functional_AbstractControlManagement = 
+	.CDC_Functional_Union =
 		{
-			.Header                 = {.Size = sizeof(CDC_FUNCTIONAL_DESCRIPTOR(1)), .Type = 0x24},
-			.SubType                = 0x02,
-			
-			.Data                   = {0x06}
-		},
-		
-	.CDC_Functional_Union= 
-		{
-			.Header                 = {.Size = sizeof(CDC_FUNCTIONAL_DESCRIPTOR(2)), .Type = 0x24},
-			.SubType                = 0x06,
-			
-			.Data                   = {0x00, 0x01}
+			.Header                 = {.Size = sizeof(USB_CDC_Descriptor_FunctionalUnion_t), .Type = DTYPE_CSInterface},
+			.Subtype                = CDC_DSUBTYPE_CSInterface_Union,
+
+			.MasterInterfaceNumber  = 0,
+			.SlaveInterfaceNumber   = 1,
 		},
 
-	.ManagementEndpoint = 
+
+	.CDC_NotificationEndpoint =
 		{
 			.Header                 = {.Size = sizeof(USB_Descriptor_Endpoint_t), .Type = DTYPE_Endpoint},
-			
-			.EndpointAddress        = (ENDPOINT_DESCRIPTOR_DIR_IN | CDC_NOTIFICATION_EPNUM),
+
+			.EndpointAddress        = CDC_NOTIFICATION_EPADDR,
 			.Attributes             = (EP_TYPE_INTERRUPT | ENDPOINT_ATTR_NO_SYNC | ENDPOINT_USAGE_DATA),
 			.EndpointSize           = CDC_NOTIFICATION_EPSIZE,
 			.PollingIntervalMS      = 0xFF
 		},
-
-	.DCI_Interface = 
+		
+	.CDC_DCI_Interface = 
 		{
 			.Header                 = {.Size = sizeof(USB_Descriptor_Interface_t), .Type = DTYPE_Interface},
 
@@ -182,24 +171,24 @@ USB_Descriptor_Configuration_t PROGMEM ConfigurationDescriptor =
 			.InterfaceStrIndex      = NO_DESCRIPTOR
 		},
 
-	.DataOutEndpoint = 
+	.CDC_DataOutEndpoint = 
 		{
 			.Header                 = {.Size = sizeof(USB_Descriptor_Endpoint_t), .Type = DTYPE_Endpoint},
 			
-			.EndpointAddress        = (ENDPOINT_DESCRIPTOR_DIR_OUT | CDC_RX_EPNUM),
+			.EndpointAddress        = CDC_RX_EPADDR,
 			.Attributes             = (EP_TYPE_BULK | ENDPOINT_ATTR_NO_SYNC | ENDPOINT_USAGE_DATA),
 			.EndpointSize           = CDC_TXRX_EPSIZE,
-			.PollingIntervalMS      = 0x00
+			.PollingIntervalMS      = 0x05
 		},
 		
-	.DataInEndpoint = 
+	.CDC_DataInEndpoint = 
 		{
 			.Header                 = {.Size = sizeof(USB_Descriptor_Endpoint_t), .Type = DTYPE_Endpoint},
 			
-			.EndpointAddress        = (ENDPOINT_DESCRIPTOR_DIR_IN | CDC_TX_EPNUM),
+			.EndpointAddress        = CDC_TX_EPADDR,
 			.Attributes             = (EP_TYPE_BULK | ENDPOINT_ATTR_NO_SYNC | ENDPOINT_USAGE_DATA),
 			.EndpointSize           = CDC_TXRX_EPSIZE,
-			.PollingIntervalMS      = 0x00
+			.PollingIntervalMS      = 0x05
 		}
 };
 
@@ -246,7 +235,7 @@ USB_Descriptor_String_t PROGMEM ProductString =
 
 extern USB_Descriptor_String_t LanguageString;
 
-uint16_t CALLBACK_NONDFU_USB_GetDescriptor(const uint16_t wValue, const uint8_t wIndex, void** const DescriptorAddress)
+uint16_t CALLBACK_NONDFU_USB_GetDescriptor(const uint16_t wValue, const uint8_t wIndex, const void** const DescriptorAddress)
 
 //uint16_t TRAP_NAME(1) (const uint16_t wValue, const uint8_t wIndex, void** const DescriptorAddress);
 //uint16_t TRAP_NAME(1) (const uint16_t wValue, const uint8_t wIndex, void** const DescriptorAddress)
@@ -260,26 +249,26 @@ uint16_t CALLBACK_NONDFU_USB_GetDescriptor(const uint16_t wValue, const uint8_t 
         switch (DescriptorType)
         {
             case DTYPE_Device:
-                Address = (void*)&DeviceDescriptor;
+                Address = &DeviceDescriptor;
                 Size    = sizeof(USB_Descriptor_Device_t);
                 break;
             case DTYPE_Configuration:
-                Address = (void*)&ConfigurationDescriptor;
+                Address = &ConfigurationDescriptor;
                 Size    = sizeof(USB_Descriptor_Configuration_t);
                 break;
             case DTYPE_String:
                 switch (DescriptorNumber)
                 {
                     case 0x00:
-                        Address = (void*)&LanguageString;
+                        Address = &LanguageString;
                         Size    = pgm_read_byte(&LanguageString.Header.Size);
                         break;
                     case 0x01:
-                        Address = (void*)&ManufacturerString;
+                        Address = &ManufacturerString;
                         Size    = pgm_read_byte(&ManufacturerString.Header.Size);
                         break;
                     case 0x02:
-                        Address = (void*)&ProductString;
+                        Address = &ProductString;
                         Size    = pgm_read_byte(&ProductString.Header.Size);
                         break;
                 }

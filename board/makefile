@@ -59,7 +59,7 @@
 #----------------------------------------------------------------------------
 
 NODFU?=0
-SDK?=1
+SDK?=0
 GPS?=1
 TAMER_VER?=123
 
@@ -142,7 +142,7 @@ OBJDIR = obj
 
 
 # Path to the LUFA library
-LUFA_PATH = LUFA-CUR
+LUFA_PATH = LUFA-120730
 
 
 # LUFA library compile-time options
@@ -164,20 +164,17 @@ SRC = src/Tamer.c                                                 \
 	  src/TamerProtocol.c                                         \
 	  src/DescriptorsCDC.c                                        \
 	  src/RingBuff.c                                              \
-	  $(LUFA_PATH)/LUFA/Drivers/USB/Class/Device/CDC.c            \
-	  $(LUFA_PATH)/LUFA/Drivers/USB/Class/Host/CDC.c              \
-	  $(LUFA_PATH)/LUFA/Drivers/USB/LowLevel/Endpoint.c           \
- 	  $(LUFA_PATH)/LUFA/Drivers/USB/LowLevel/Pipe.c               \
-	  $(LUFA_PATH)/LUFA/Drivers/USB/HighLevel/Events.c            \
-          $(LUFA_PATH)/LUFA/Drivers/USB/HighLevel/ConfigDescriptor.c  \
+      src/TamerHwistr.c                                           \
+	  $(LUFA_PATH)/LUFA/Drivers/USB/Class/Device/CDCClassDevice.c \
+	  $(LUFA_PATH)/LUFA/Drivers/USB/Core/$(ARCH)/Endpoint_$(ARCH).c  \
+
+
 
 ifeq ($(NODFU), 1)
-SRC += \
-	  src/TamerHwistr.c                                           \
-	  $(LUFA_PATH)/LUFA/Drivers/USB/LowLevel/DevChapter9.c        \
-	  $(LUFA_PATH)/LUFA/Drivers/USB/LowLevel/LowLevel.c           \
-	  $(LUFA_PATH)/LUFA/Drivers/USB/HighLevel/USBInterrupt.c      \
-          $(LUFA_PATH)/LUFA/Drivers/USB/HighLevel/USBTask.c           \
+SRC += \	  
+	  $(LUFA_PATH)/LUFA/Drivers/USB/Core/$(ARCH)/Device_$(ARCH).c    \
+	  $(LUFA_PATH)/LUFA/Drivers/USB/Core/$(ARCH)/USBInterrupt_$(ARCH).c      \
+      $(LUFA_PATH)/LUFA/Drivers/USB/Core/$(ARCH)/USBController_$(ARCH).c      \
 
 #$(LUFA_PATH)/LUFA/Drivers/USB/HighLevel/EndpointStream.c    \
 
@@ -185,13 +182,11 @@ else
 
 ifeq ($(SDK), 0)
 SRC += \
-	  src/TamerHwistr.c					      \
 	  src/DescriptorsDFU.c                                        \
 	  src/BootloaderDFU.c                                         \
-	  $(LUFA_PATH)/LUFA/Drivers/USB/LowLevel/DevChapter9.c        \
-	  $(LUFA_PATH)/LUFA/Drivers/USB/LowLevel/LowLevel.c           \
-	  $(LUFA_PATH)/LUFA/Drivers/USB/HighLevel/USBInterrupt.c      \
-	  $(LUFA_PATH)/LUFA/Drivers/USB/HighLevel/USBTask.c           \
+	  $(LUFA_PATH)/LUFA/Drivers/USB/Core/$(ARCH)/Device_$(ARCH).c    \
+	  $(LUFA_PATH)/LUFA/Drivers/USB/Core/$(ARCH)/USBInterrupt_$(ARCH).c      \
+      $(LUFA_PATH)/LUFA/Drivers/USB/Core/$(ARCH)/USBController_$(ARCH).c      \
 
 # $(LUFA_PATH)/LUFA/Drivers/USB/HighLevel/EndpointStream.c    \
 
