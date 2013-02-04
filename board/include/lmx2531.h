@@ -98,10 +98,18 @@
 #define FOLD_DIGITAL_LOCK        3
 
 
+#define FDM_INTEGER              0
 #define FDM_FRACTIONAL           1
 
 #define ICP_1X                   0
 #define ICP_2X                   1
+#define ICP_3X                   2
+#define ICP_4X                   3
+
+#define ICP_5X                   4
+#define ICP_6X                   5
+#define ICP_7X                   6
+#define ICP_8X                   7
 
 #define TOC_DISABLED             0
 

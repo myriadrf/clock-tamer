@@ -67,7 +67,7 @@
 #define den_bit                 21
 #define den         ((uint32_t)1 << den_bit)
 
-
+void SetLMK(void);
 uint8_t SetLMX2531(uint8_t tuneOnly);
 
 extern TamerCommand_t command;
@@ -86,12 +86,19 @@ void FillResultPM(uint8_t* res)
     FillResultNoNewLinePM(newLine);
 }
 
+static void Store(uint8_t byte)
+{
+	cli();
+	Buffer_StoreElement(&USARTtoUSB_Buffer, byte);
+	sei();
+}
+
 void FillResultNoNewLinePM(uint8_t* res)
 {
     uint8_t byte;
     while ((byte = pgm_read_byte(res++)))
     {
-        Buffer_StoreElement(&USARTtoUSB_Buffer, byte);
+        Store(byte);
     }
 }
 
@@ -102,7 +109,7 @@ static void FillHead(uint8_t* res, uint8_t idx)
 
     if (idx > 0xf0)
     {
-        Buffer_StoreElement(&USARTtoUSB_Buffer, '?');
+        Store('?');
     }
     else
     {
@@ -110,7 +117,7 @@ static void FillHead(uint8_t* res, uint8_t idx)
         for (i = 0; i < 3; i++)
         {
             byte = pgm_read_byte(res++);
-            Buffer_StoreElement(&USARTtoUSB_Buffer, byte);
+            Store(byte);
         }
     }
 }
@@ -123,13 +130,13 @@ static void FillCmd(void)
 {
     if (command.cmd > 0)
         FillHead(pCmd, command.cmd - 1);
-    Buffer_StoreElement(&USARTtoUSB_Buffer, ',');
+    Store(',');
     if (command.type > 0)
         FillHead(pTrg, command.type - 1);
-    Buffer_StoreElement(&USARTtoUSB_Buffer, ',');
+    Store(',');
     if (command.details > 0)
         FillHead(pDet, command.details - 1);
-    Buffer_StoreElement(&USARTtoUSB_Buffer, ',');
+    Store(',');
 }
 
 static void FillUint32(uint32_t val)
@@ -143,12 +150,12 @@ static void FillUint32(uint32_t val)
        // if ((f) || (v > 0))
         {
             f = 1;
-            Buffer_StoreElement(&USARTtoUSB_Buffer, '0' + v);
+            Store('0' + v);
         }
         val -= v*stv;
     }
     if (f == 0)
-        Buffer_StoreElement(&USARTtoUSB_Buffer, '0');
+        Store('0');
 }
 
 #ifdef FILL_UINT16
@@ -163,12 +170,12 @@ static void FillUint16(uint16_t val)
         //if ((f) || (v > 0))
         {
             f = 1;
-            Buffer_StoreElement(&USARTtoUSB_Buffer, '0' + v);
+            Store('0' + v);
         }
         val -= v*stv;
     }
     if (f == 0)
-        Buffer_StoreElement(&USARTtoUSB_Buffer, '0');
+        Store('0');
 }
 #else
 #define FillUint16(x)   FillUint32(x)
@@ -273,7 +280,7 @@ uint32_t SelfPrev = 0;
 
 #define FOLD_VALUE  FOLD_DIGITAL_LOCK
 
-static inline uint8_t IsVcoLocked()
+static inline uint8_t IsVcoLocked(void)
 {
     return (PINC & (1<<PC5));
 }
@@ -371,13 +378,13 @@ static void StoreEEPROM(void)
 
 static void LoadHwInfo(void)
 {
-    int i;
+    uint16_t i;
     for (i=0; i<HWI_LEN; i++)
     {
-        char c = eeprom_read_byte(&eeHWInfo[i]);
+        uint8_t c = eeprom_read_byte((uint8_t*)&eeHWInfo[i]);
         if (c == 0)
             break;
-        Buffer_StoreElement(&USARTtoUSB_Buffer, c);
+        Store(c);
     }
 	FillResultNoNewLinePM(newLine);
 }
@@ -745,24 +752,41 @@ void TrimClock(void)
 extern uint8_t gpsmode;
 extern uint8_t commands;
 extern RingBuff_t USBtoUSART_Buffer;
-extern RingBuff_t USARTtoUSB_Buffer;
+//extern RingBuff_t USARTtoUSB_Buffer;
 
 ISR(SPI_STC_vect, ISR_BLOCK)
 {
 //	if (USB_DeviceState != DEVICE_STATE_Configured)
 //	{
-		if (USARTtoUSB_Buffer.Elements)
-			SPDR = Buffer_GetElement(&USARTtoUSB_Buffer);
-		else
+	   	uint8_t byte = SPDR;		
+		if (USARTtoUSB_Buffer.Elements) {
+			SPDR = *(USARTtoUSB_Buffer.OutPtr++);
+			
+			USARTtoUSB_Buffer.Elements--;
+			//USARTtoUSB_Buffer.OutPtr++;
+			if (USARTtoUSB_Buffer.OutPtr == &USARTtoUSB_Buffer.Buffer[BUFF_LENGTH])
+				USARTtoUSB_Buffer.OutPtr = (RingBuff_Data_t*)&USARTtoUSB_Buffer.Buffer;			
+			
+		} else {
 			SPDR = 0xff;
-
-
-	   	uint8_t byte = SPDR;
-  	  	if (byte == '\n' || byte == '\r')
+		}
+		
+  	  	if (byte == '\n' || byte == '\r') {
    		 	commands++;
+		}
 
-		if ((byte != 0) && (byte != 0xff))
-            Buffer_StoreElement(&USBtoUSART_Buffer, byte);
+		if ((byte != 0) && (byte != 0xff)) {
+            //Buffer_StoreElement(&USBtoUSART_Buffer, byte);
+			USBtoUSART_Buffer.Elements++;
+
+			*(USBtoUSART_Buffer.InPtr++) = byte;
+			//USBtoUSART_Buffer.InPtr++;
+		
+			if (USBtoUSART_Buffer.InPtr == &USBtoUSART_Buffer.Buffer[BUFF_LENGTH])
+				USBtoUSART_Buffer.InPtr = (RingBuff_Data_t*)&USBtoUSART_Buffer.Buffer;			
+		}
+			
+
 //	}
 //	else
 //	{
@@ -959,15 +983,15 @@ uint8_t SetLMX2531(uint8_t tuneOnly)
 
         LMX2531_WRITE( MAKE_R6(XTLSEL_MANUAL, VCO_ACI_SEL_M1, 1, R_40, R_10, R_40, R_10, C3_C4_100_100) );
         //LMX2531_WRITE( MAKE_R6(CALC_XTSEL(Fosc/1000000), VCO_ACI_SEL_M1, 1, R_40, R_10, R_40, R_10, C3_C4_100_100) );
-        LMX2531_WRITE( MAKE_R4(ICP_1X, TOC_DISABLED) );
+        LMX2531_WRITE( MAKE_R4(ICP_8X, TOC_DISABLED) );
 #ifdef DEBUG_REGS
-        LMX2531_WRITE(tmp_r3 = MAKE_R3((VCO_MAX > DIVIDER_MAX_FREQ), FDM_FRACTIONAL, DITHER_STRONG, FRAC_ORDER_4, FOLD_VALUE, den >> 12) );
+        LMX2531_WRITE(tmp_r3 = MAKE_R3((VCO_MAX > DIVIDER_MAX_FREQ), FDM_INTEGER, DITHER_DISABLED, FRAC_ORDER_0, FOLD_VALUE, den >> 12) );
         LMX2531_WRITE(tmp_r2 = MAKE_R2(den & 0xFFF, r) );
     }
     LMX2531_WRITE(tmp_r1 = MAKE_R1(ICP_1X, n >> 8, num >> 12) );
     LMX2531_WRITE(tmp_r0 = MAKE_R0(n & 0xFF, num & 0xFFF) );
 #else
-        LMX2531_WRITE( MAKE_R3((VCO_MAX > DIVIDER_MAX_FREQ), FDM_FRACTIONAL, DITHER_STRONG, FRAC_ORDER_4, FOLD_VALUE, den >> 12) );
+        LMX2531_WRITE( MAKE_R3((VCO_MAX > DIVIDER_MAX_FREQ), FDM_INTEGER, DITHER_DISABLED, FRAC_ORDER_0, FOLD_VALUE, den >> 12) );
         LMX2531_WRITE( MAKE_R2(den & 0xFFF, r) );
     }
     //LMX2531_WRITE( MAKE_R1(ICP_1X, n >> 8, num >> 12) );
