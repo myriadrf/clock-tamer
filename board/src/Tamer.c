@@ -130,6 +130,7 @@ void DoExtraTasks(uint8_t dosend)
     USB_USBTask();
 }
 
+
 int main(void)
 {
 #if TAMER_VER >= 12
@@ -150,7 +151,11 @@ int main(void)
 
 	USART_vInit();
 
+	//INFOLED_DDR |=  (1 << INFOLED);
+	//INFOLED_PORT |= (1 << INFOLED);
 	//CDC_Device_CreateStream(&VirtualSerial_CDC_Interface, &USBSerialStream);
+
+	sei();
 
 	for (;;)
 	{
@@ -268,10 +273,6 @@ int main(void)
 }
 
 
-#if (!defined(FIXED_CONTROL_ENDPOINT_SIZE))
-extern uint8_t USB_ControlEndpointSize;
-#endif
-    
 /** Configures the board hardware and chip peripherals for the demo's functionality. */
 void SetupHardware(void)
 {
@@ -286,7 +287,7 @@ void SetupHardware(void)
 //	Serial_Init(38400, false);
 
 #if (!defined(FIXED_CONTROL_ENDPOINT_SIZE))
-    USB_ControlEndpointSize = CDC_CONTROL_ENDPOINT_SIZE;
+    USB_Device_ControlEndpointSize = CDC_CONTROL_ENDPOINT_SIZE;
 #endif
 
     USB_Init();
@@ -308,7 +309,7 @@ DEFINE_USERTRAP()
 
 /** Event handler for the library USB Unhandled Control Request event. */
 #ifdef NO_BOOTSHARED
-void EVENT_USB_Device_UnhandledControlRequest(void)
+void EVENT_USB_Device_ControlRequest(void)
 #else
 TRAP(TR_USB_DEVICE_UNHANDLEDCONTROLREQUEST)
 #endif
@@ -351,14 +352,17 @@ TRAP(TR_USB_DEVICE_DISCONNECT)
 	SPCR |= (1<<SPE);
 }
 
-uint16_t CALLBACK_NONDFU_USB_GetDescriptor(const uint16_t wValue, const uint8_t wIndex, void** const DescriptorAddress);
+#ifndef NO_BOOTSHARED
+uint16_t CALLBACK_NONDFU_USB_GetDescriptor(const uint16_t wValue, const uint8_t wIndex, const void** const DescriptorAddress);
 
-uint16_t TRAP_NAME(TR_USB_GETDESCRIPTOR) (const uint16_t wValue, const uint8_t wIndex, void** const DescriptorAddress);
+uint16_t TRAP_NAME(TR_USB_GETDESCRIPTOR) (const uint16_t wValue, const uint8_t wIndex, const void** const DescriptorAddress);
 
-uint16_t TRAP_NAME(TR_USB_GETDESCRIPTOR) (const uint16_t wValue, const uint8_t wIndex, void** const DescriptorAddress)
+uint16_t TRAP_NAME(TR_USB_GETDESCRIPTOR) (const uint16_t wValue, const uint8_t wIndex, const void** const DescriptorAddress)
 {
     CALLBACK_NONDFU_USB_GetDescriptor(wValue, wIndex, DescriptorAddress);
 }
+#endif
+
 
 
 /** ISR to manage the reception of data from the serial port, placing received bytes into a circular buffer

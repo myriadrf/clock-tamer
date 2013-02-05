@@ -58,7 +58,7 @@
 # To rebuild project do "make clean" then "make all".
 #----------------------------------------------------------------------------
 
-NODFU?=0
+NODFU?=1
 SDK?=0
 GPS?=1
 TAMER_VER?=123
@@ -149,11 +149,16 @@ LUFA_PATH = LUFA-120730
 LUFA_OPTS  = -D USB_DEVICE_ONLY -D F_USB=$(F_CPU) -I$(LUFA_PATH)
 LUFA_OPTS += -D FIXED_NUM_CONFIGURATIONS=1
 LUFA_OPTS += -D USE_FLASH_DESCRIPTORS
+LUFA_OPTS += -D FIXED_CONTROL_ENDPOINT_SIZE=8
+LUFA_OPTS += -D INTERRUPT_CONTROL_ENDPOINT
 LUFA_OPTS += -D USE_STATIC_OPTIONS="(USB_DEVICE_OPT_FULLSPEED | USB_OPT_REG_ENABLED | USB_OPT_AUTO_PLL)"
+
 ifeq ($(NODFU), 0)
 ifneq ($(SDK), 0)
 LUFA_OPTS += -D LUFA_NODFU_ENDPOINT_CODE
 endif
+else
+LUFA_OPTS += -D NO_BOOTSHARED
 endif
 
 # List C source files here. (C dependencies are automatically generated.)
@@ -167,16 +172,18 @@ SRC = src/Tamer.c                                                 \
       src/TamerHwistr.c                                           \
 	  $(LUFA_PATH)/LUFA/Drivers/USB/Class/Device/CDCClassDevice.c \
 	  $(LUFA_PATH)/LUFA/Drivers/USB/Core/$(ARCH)/Endpoint_$(ARCH).c  \
-
+	  $(LUFA_PATH)/LUFA/Drivers/USB/Core/$(ARCH)/EndpointStream_$(ARCH).c  \
 
 
 ifeq ($(NODFU), 1)
-SRC += \	  
+SRC += \
+	  $(LUFA_PATH)/LUFA/Drivers/USB/Core/ConfigDescriptors.c    \
+	  $(LUFA_PATH)/LUFA/Drivers/USB/Core/DeviceStandardReq.c    \
+	  $(LUFA_PATH)/LUFA/Drivers/USB/Core/Events.c    \
+      $(LUFA_PATH)/LUFA/Drivers/USB/Core/USBTask.c    \
 	  $(LUFA_PATH)/LUFA/Drivers/USB/Core/$(ARCH)/Device_$(ARCH).c    \
 	  $(LUFA_PATH)/LUFA/Drivers/USB/Core/$(ARCH)/USBInterrupt_$(ARCH).c      \
       $(LUFA_PATH)/LUFA/Drivers/USB/Core/$(ARCH)/USBController_$(ARCH).c      \
-
-#$(LUFA_PATH)/LUFA/Drivers/USB/HighLevel/EndpointStream.c    \
 
 else
 
@@ -184,6 +191,9 @@ ifeq ($(SDK), 0)
 SRC += \
 	  src/DescriptorsDFU.c                                        \
 	  src/BootloaderDFU.c                                         \
+	  $(LUFA_PATH)/LUFA/Drivers/USB/Core/DeviceStandardReq.c    \
+	  $(LUFA_PATH)/LUFA/Drivers/USB/Core/Events.c    \
+      $(LUFA_PATH)/LUFA/Drivers/USB/Core/USBTask.c    \
 	  $(LUFA_PATH)/LUFA/Drivers/USB/Core/$(ARCH)/Device_$(ARCH).c    \
 	  $(LUFA_PATH)/LUFA/Drivers/USB/Core/$(ARCH)/USBInterrupt_$(ARCH).c      \
       $(LUFA_PATH)/LUFA/Drivers/USB/Core/$(ARCH)/USBController_$(ARCH).c      \
@@ -208,10 +218,10 @@ CPPSRC =
 
 
 ifeq ($(NODFU), 0)
-ASRC =	  src/bootstrap.S
+#########################ASRC =	  src/bootstrap.S
 
 ifeq ($(SDK), 0)
-ASRC +=	  src/gbootcrt1.S
+#########################ASRC +=	  src/gbootcrt1.S
 endif
 endif
 
@@ -285,15 +295,17 @@ CFLAGS += -Wa,-adhlns=$(<:%.c=$(OBJDIR)/%.lst)
 CFLAGS += $(patsubst %,-I%,$(EXTRAINCDIRS))
 CFLAGS += $(CSTANDARD)
 CFLAGS += -DTAMER_VER=$(TAMER_VER)
+
 ifeq ($(NODFU), 0)
 CFLAGS += -D LUFA_DFU_DEVICE_SECTION="__attribute__ ((section (\".bootloader\")))"
 CFLAGS += -D LUFA_SHARED_DATA_SECTION="__attribute__ ((section (\".shareddata\")))"
 else
-CFLAGS += -DCALLBACK_USB_GetDescriptor="CALLBACK_NONDFU_USB_GetDescriptor"
+#CFLAGS += -DCALLBACK_USB_GetDescriptor="CALLBACK_NONDFU_USB_GetDescriptor"
 CFLAGS += -DNO_BOOTSHARED
 CFLAGS += -DLUFA_DFU_DEVICE_SECTION=""
 CFLAGS += -DLUFA_SHARED_DATA_SECTION=""
 endif
+
 CFLAGS += -D HWIEEMEM="__attribute__ ((section (\".hwieeprom\")))" -DHWISTR=$(HWISTR)
 CFLAGS += -D SAFE_EEPROM_ADDRESS=412
 ifeq ($(GPS), 1)
@@ -398,15 +410,18 @@ LDFLAGS = -Wl,-Map=$(TARGET).map,--cref
 LDFLAGS += -Wl,--relax 
 LDFLAGS += -Wl,--gc-sections
 LDFLAGS += -Wl,--section-start=.bootloader=$(BOOT_START)
+LDFLAGS += -Wl,--section-start=.bootrst=$(BOOT_START)
 ifeq ($(NODFU), 1)
 #LDFLAGS += -Wl,--section-start=.hwieeprom=0x81009B
 LDFLAGS += -Wl,--script=avr3nodfu.x
 else
-ifeq ($(SDK), 0)
-LDFLAGS += -Wl,--script=avr3sharedboot.x
-else
-LDFLAGS += -Wl,--script=sdk-v$(SDK)/avr3-sdk.x
-endif
+
+#############ifeq ($(SDK), 0)
+#############LDFLAGS += -Wl,--script=avr3sharedboot.x
+#############else
+#############LDFLAGS += -Wl,--script=sdk-v$(SDK)/avr3-sdk.x
+#############endif
+
 endif
 
 LDFLAGS += $(EXTMEMOPTS)
@@ -594,16 +609,16 @@ sizeafter:
 	@if test -f $(TARGET).elf; then echo; echo $(MSG_SIZE_AFTER); $(ELFSIZE); \
 	2>/dev/null; echo; fi
 
-$(LUFA_PATH)/LUFA/LUFA_Events.lst:
-	@make -C $(LUFA_PATH)/LUFA/ LUFA_Events.lst
+#$(LUFA_PATH)/LUFA/LUFA_Events.lst:
+#	@make -C $(LUFA_PATH)/LUFA/ LUFA_Events.lst
 
-checkinvalidevents: $(LUFA_PATH)/LUFA/LUFA_Events.lst
-	@echo
-	@echo Checking for invalid events...
-	@$(shell) avr-nm $(OBJ) | sed -n -e 's/^.*EVENT_/EVENT_/p' | \
-	                 grep -F -v --file=$(LUFA_PATH)/LUFA/LUFA_Events.lst > InvalidEvents.tmp || true
-	@sed -n -e 's/^/  WARNING - INVALID EVENT NAME: /p' InvalidEvents.tmp
-	@if test -s InvalidEvents.tmp; then exit 1; fi
+#checkinvalidevents: $(LUFA_PATH)/LUFA/LUFA_Events.lst
+#	@echo
+#	@echo Checking for invalid events...
+#	@$(shell) avr-nm $(OBJ) | sed -n -e 's/^.*EVENT_/EVENT_/p' | \
+#	                 grep -F -v --file=$(LUFA_PATH)/LUFA/LUFA_Events.lst > InvalidEvents.tmp || true
+#	@sed -n -e 's/^/  WARNING - INVALID EVENT NAME: /p' InvalidEvents.tmp
+#	@if test -s InvalidEvents.tmp; then exit 1; fi
 
 showliboptions:
 	@echo

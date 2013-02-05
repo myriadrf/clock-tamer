@@ -201,9 +201,6 @@ DFU_SECTION void bootmain(void)
     AppStartPtr();
 }
 
-#if (!defined(FIXED_CONTROL_ENDPOINT_SIZE))
-	extern uint8_t USB_ControlEndpointSize;
-#endif
 /** Configures all hardware required for the bootloader. */
 DFU_SECTION void SetupHardwareDFU(void)
 {
@@ -219,7 +216,7 @@ DFU_SECTION void SetupHardwareDFU(void)
 	MCUCR = (1 << IVSEL);
 
 #if (!defined(FIXED_CONTROL_ENDPOINT_SIZE))
-    USB_ControlEndpointSize = DFU_CONTROL_ENDPOINT_SIZE;
+    USB_Device_ControlEndpointSize = DFU_CONTROL_ENDPOINT_SIZE;
 #endif
 
 	/* Initialize the USB subsystem */

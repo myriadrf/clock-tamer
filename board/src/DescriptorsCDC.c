@@ -233,10 +233,12 @@ USB_Descriptor_String_t PROGMEM ProductString =
  *  USB host.
  */
 
+#ifndef NO_BOOTSHARED
 extern USB_Descriptor_String_t LanguageString;
-
 uint16_t CALLBACK_NONDFU_USB_GetDescriptor(const uint16_t wValue, const uint8_t wIndex, const void** const DescriptorAddress)
-
+#else
+uint16_t CALLBACK_USB_GetDescriptor(const uint16_t wValue, const uint8_t wIndex, const void** const DescriptorAddress)
+#endif
 //uint16_t TRAP_NAME(1) (const uint16_t wValue, const uint8_t wIndex, void** const DescriptorAddress);
 //uint16_t TRAP_NAME(1) (const uint16_t wValue, const uint8_t wIndex, void** const DescriptorAddress)
 {
