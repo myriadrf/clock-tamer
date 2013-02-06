@@ -173,19 +173,14 @@ DFU_SECTION void SkipDfu(void)
     //   CALL_TRAP(TR_USERCODE);
     //}
     if (PINB & 0x1) {
-        __asm__ __volatile("jmp 0x0000;\r\n");
+        MCUCR = (1 << IVCE);
+        MCUCR = 0;
+        ((AppPtr_t)0x0000)();
     }
 
     INFOLED_DDR |=  (1 << INFOLED);
     INFOLED_PORT |= (1 << INFOLED);
 }
-
-#if 0
-DFU_SECTION void __bootvector_11(void)
-{
-    __asm__ __volatile__("jmp __vector_11;\r\n");
-}
-#endif
 
 /** Main program entry point. This routine configures the hardware required by the bootloader, then continuously
  *  runs the bootloader processing routine until instructed to soft-exit, or hard-reset via the watchdog to start
@@ -197,6 +192,8 @@ DFU_SECTION void main(void)
 
     /* Configure hardware required by the bootloader */
     SetupHardwareDFU();
+
+    sei();
 
     /* Run the USB management task while the bootloader is supposed to be running */
     //while (!WaitForExit)
@@ -225,9 +222,6 @@ DFU_SECTION void SetupHardwareDFU(void)
 	MCUCR = (1 << IVCE);
 	MCUCR = (1 << IVSEL);
 
-#if (!defined(FIXED_CONTROL_ENDPOINT_SIZE))
-    USB_Device_ControlEndpointSize = DFU_CONTROL_ENDPOINT_SIZE;
-#endif
 
 	/* Initialize the USB subsystem */
 	USB_Init();
@@ -253,6 +247,13 @@ DFU_SECTION void ResetHardwareDFU(void)
  */
 DFU_SECTION void EVENT_USB_Device_ControlRequest(void)
 {
+    /* Ignore any requests that aren't directed to the DFU interface */
+    if ((USB_ControlRequest.bmRequestType & (CONTROL_REQTYPE_TYPE | CONTROL_REQTYPE_RECIPIENT)) !=
+        (REQTYPE_CLASS | REQREC_INTERFACE))
+    {
+        return;
+    }
+
     /* Get the size of the command and data from the wLength value */
     SentCommand.DataSize = USB_ControlRequest.wLength;
 
