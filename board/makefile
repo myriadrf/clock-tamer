@@ -413,7 +413,7 @@ LDFLAGS += -Wl,--section-start=.bootloader=$(BOOT_START)
 LDFLAGS += -Wl,--section-start=.bootrst=$(BOOT_START)
 ifeq ($(NODFU), 1)
 #LDFLAGS += -Wl,--section-start=.hwieeprom=0x81009B
-LDFLAGS += -Wl,--script=avr3nodfu.x
+#LDFLAGS += -Wl,--script=avr3nodfu.x
 else
 
 #############ifeq ($(SDK), 0)

@@ -4,7 +4,6 @@ include/DescriptorsDFU.h
 include/lmk0x0xx.h
 include/lmx2531.h
 include/RingBuff.h
-include/SharedBoot.h
 include/Tamer.h
 include/TamerBoard.h
 include/TamerConfig.h
@@ -126,11 +125,8 @@ LUFA-120730/LUFA/Drivers/USB/Core/USBTask.c
 LUFA-120730/LUFA/Drivers/USB/Core/USBTask.h
 LUFA-120730/LUFA/Drivers/USB/USB.h
 src/BootloaderDFU.c
-src/bootstrap.S
 src/DescriptorsCDC.c
 src/DescriptorsDFU.c
-src/gbootcrt1.S
-src/gnone.S
 src/RingBuff.c
 src/Tamer.c
 src/TamerBoard.c
