@@ -43,8 +43,6 @@
         #include "TamerProtocol.h"
         #include "TamerBoard.h"
 
-        #include "SharedBoot.h"
-
 		#include <LUFA/Version.h>
 		#include <LUFA/Drivers/USB/USB.h>
 

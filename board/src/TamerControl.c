@@ -759,7 +759,7 @@ ISR(SPI_STC_vect, ISR_BLOCK)
 //	if (USB_DeviceState != DEVICE_STATE_Configured)
 //	{
 	   	uint8_t byte = SPDR;		
-		if (USARTtoUSB_Buffer.Elements) {
+        if (byte == 0xFF && USARTtoUSB_Buffer.Elements) {
 			SPDR = *(USARTtoUSB_Buffer.OutPtr++);
 			
 			USARTtoUSB_Buffer.Elements--;
@@ -783,7 +783,7 @@ ISR(SPI_STC_vect, ISR_BLOCK)
 			//USBtoUSART_Buffer.InPtr++;
 		
 			if (USBtoUSART_Buffer.InPtr == &USBtoUSART_Buffer.Buffer[BUFF_LENGTH])
-				USBtoUSART_Buffer.InPtr = (RingBuff_Data_t*)&USBtoUSART_Buffer.Buffer;			
+                USBtoUSART_Buffer.InPtr = (RingBuff_Data_t*)&USBtoUSART_Buffer.Buffer;
 		}
 			
 

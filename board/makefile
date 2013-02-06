@@ -217,14 +217,6 @@ CPPSRC =
 #     care about how the name is spelled on its command-line.
 
 
-ifeq ($(NODFU), 0)
-#########################ASRC =	  src/bootstrap.S
-
-ifeq ($(SDK), 0)
-#########################ASRC +=	  src/gbootcrt1.S
-endif
-endif
-
 
 # Optimization level, can be [0, 1, 2, 3, s]. 
 #     0 = turn off optimization. s = optimize for size.
@@ -296,17 +288,7 @@ CFLAGS += $(patsubst %,-I%,$(EXTRAINCDIRS))
 CFLAGS += $(CSTANDARD)
 CFLAGS += -DTAMER_VER=$(TAMER_VER)
 
-ifeq ($(NODFU), 0)
-CFLAGS += -D LUFA_DFU_DEVICE_SECTION="__attribute__ ((section (\".bootloader\")))"
-CFLAGS += -D LUFA_SHARED_DATA_SECTION="__attribute__ ((section (\".shareddata\")))"
-else
-#CFLAGS += -DCALLBACK_USB_GetDescriptor="CALLBACK_NONDFU_USB_GetDescriptor"
-CFLAGS += -DNO_BOOTSHARED
-CFLAGS += -DLUFA_DFU_DEVICE_SECTION=""
-CFLAGS += -DLUFA_SHARED_DATA_SECTION=""
-endif
-
-CFLAGS += -D HWIEEMEM="__attribute__ ((section (\".hwieeprom\")))" -DHWISTR=$(HWISTR)
+CFLAGS += -D HWIEEMEM="__attribute__ ((section (\".hwieeprom\")))" 
 CFLAGS += -D SAFE_EEPROM_ADDRESS=412
 ifeq ($(GPS), 1)
 CFLAGS += -D PRESENT_GPS
@@ -410,19 +392,7 @@ LDFLAGS = -Wl,-Map=$(TARGET).map,--cref
 LDFLAGS += -Wl,--relax 
 LDFLAGS += -Wl,--gc-sections
 LDFLAGS += -Wl,--section-start=.bootloader=$(BOOT_START)
-LDFLAGS += -Wl,--section-start=.bootrst=$(BOOT_START)
-ifeq ($(NODFU), 1)
-#LDFLAGS += -Wl,--section-start=.hwieeprom=0x81009B
-#LDFLAGS += -Wl,--script=avr3nodfu.x
-else
-
-#############ifeq ($(SDK), 0)
-#############LDFLAGS += -Wl,--script=avr3sharedboot.x
-#############else
-#############LDFLAGS += -Wl,--script=sdk-v$(SDK)/avr3-sdk.x
-#############endif
-
-endif
+LDFLAGS += -Wl,--section-start=.hwieeprom=0x81019C
 
 LDFLAGS += $(EXTMEMOPTS)
 LDFLAGS += $(patsubst %,-L%,$(EXTRALIBDIRS))
@@ -723,15 +693,15 @@ extcoff: $(TARGET).elf
 
 # Create final output files (.hex, .eep) from ELF output file.
 %.hex: %.elf
-	@echo
+	@echo #######################################
 	@echo $(MSG_FLASH) $@
-	$(OBJCOPY) -O $(FORMAT) -R .eeprom $< $@
+	$(OBJCOPY) -O $(FORMAT) -R .eeprom -R .hwieeprom $< $@
 
 %.eep: %.elf
-	@echo
+	@echo #######################################
 	@echo $(MSG_EEPROM) $@
-	-$(OBJCOPY) -j .eeprom -j .hwieeprom --set-section-flags=.eeprom="alloc,load" \
-	--change-section-lma .eeprom=0 --no-change-warnings -O $(FORMAT) $< $@ || exit 0
+	-$(OBJCOPY) -j .eeprom -j .hwieeprom --set-section-flags=.eeprom="alloc,load" --set-section-flags=.hwieeprom="alloc,load" \
+	--change-section-lma .eeprom=0 --change-section-lma .hwieeprom=412 --no-change-warnings -O $(FORMAT) $< $@ || exit 0
 
 # Create extended listing file from ELF output file.
 %.lss: %.elf

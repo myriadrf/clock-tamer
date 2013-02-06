@@ -63,8 +63,6 @@
 	#include <LUFA/Common/Common.h>
 #endif
 
-	#define BUFF_VOLATILE
-
 	/* Defines and checks: */
 	#if defined(BUFF_STATICSIZE)
 		#define BUFF_LENGTH BUFF_STATICSIZE

@@ -151,10 +151,6 @@ int main(void)
 
 	USART_vInit();
 
-	//INFOLED_DDR |=  (1 << INFOLED);
-	//INFOLED_PORT |= (1 << INFOLED);
-	//CDC_Device_CreateStream(&VirtualSerial_CDC_Interface, &USBSerialStream);
-
 	sei();
 
 	for (;;)
@@ -302,27 +298,14 @@ void SetupHardware(void)
 
 }
 
-
-DEFINE_USERTRAP()
-
-
-
 /** Event handler for the library USB Unhandled Control Request event. */
-#ifdef NO_BOOTSHARED
 void EVENT_USB_Device_ControlRequest(void)
-#else
-TRAP(TR_USB_DEVICE_UNHANDLEDCONTROLREQUEST)
-#endif
 {
     CDC_Device_ProcessControlRequest(&VirtualSerial_CDC_Interface);
 }
 
 /** Event handler for the library USB Configuration Changed event. */
-#ifdef NO_BOOTSHARED
 void EVENT_USB_Device_ConfigurationChanged(void)
-#else
-TRAP(TR_USB_DEVICE_CONFIGURATIONCHANGED)
-#endif
 {
     if (!(CDC_Device_ConfigureEndpoints(&VirtualSerial_CDC_Interface)))
         LedClear();
@@ -331,49 +314,18 @@ TRAP(TR_USB_DEVICE_CONFIGURATIONCHANGED)
 }
 
 /** Event handler for the library USB Connection event. */
-#ifdef NO_BOOTSHARED
 void EVENT_USB_Device_Connect(void)
-#else
-TRAP(TR_USB_DEVICE_CONNECT)
-#endif
 {
     LedSet();
 	SPCR &=~(1<<SPE);
 }
 
 /** Event handler for the library USB Disconnection event. */
-#ifdef NO_BOOTSHARED
 void EVENT_USB_Device_Disconnect(void)
-#else
-TRAP(TR_USB_DEVICE_DISCONNECT)
-#endif
 {
     LedClear();
 	SPCR |= (1<<SPE);
 }
-
-#ifndef NO_BOOTSHARED
-uint16_t CALLBACK_NONDFU_USB_GetDescriptor(const uint16_t wValue, const uint8_t wIndex, const void** const DescriptorAddress);
-
-uint16_t TRAP_NAME(TR_USB_GETDESCRIPTOR) (const uint16_t wValue, const uint8_t wIndex, const void** const DescriptorAddress);
-
-uint16_t TRAP_NAME(TR_USB_GETDESCRIPTOR) (const uint16_t wValue, const uint8_t wIndex, const void** const DescriptorAddress)
-{
-    CALLBACK_NONDFU_USB_GetDescriptor(wValue, wIndex, DescriptorAddress);
-}
-#endif
-
-
-
-/** ISR to manage the reception of data from the serial port, placing received bytes into a circular buffer
- *  for later transmission to the host.
- */
-/*
-ISR(USART1_RX_vect, ISR_BLOCK)
-{
-
-}
-*/
 
 
 

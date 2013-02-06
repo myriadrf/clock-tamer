@@ -36,7 +36,6 @@
  */
 
 #include "DescriptorsCDC.h"
-#include "SharedBoot.h"
 
 /* On some devices, there is a factory set internal serial number which can be automatically sent to the host as
  * the device's serial number when the Device Descriptor's .SerialNumStrIndex entry is set to USE_INTERNAL_SERIAL.

@@ -29,22 +29,28 @@
 #include "TamerControl.h"
 
 
+#define _STRINGIFY2(x)     #x
+#define STRINGIFY2(x)      _STRINGIFY2(x)
 
 #ifndef HWISTR_CUSTOM
 
+#if TAMER_OSC > 40
+#error Incorrect value for TAMER_OSC
+#endif
+
 #ifdef LMX2531_TYPE
-#define HWISTR_LMX		"LMX=" STRINGIFY(LMX2531_TYPE) " "
+#define HWISTR_LMX		"LMX=" STRINGIFY2(LMX2531_TYPE) " "
 #else
 #define HWISTR_LMX
 #endif
 
 #ifdef LMK_TYPE
-#define HWISTR_LMK		"LMK=" STRINGIFY(LMK_TYPE) " "
+#define HWISTR_LMK		"LMK=" STRINGIFY2(LMK_TYPE) " "
 #else
 #define HWISTR_LMK
 #endif
 
-#define HWISTR_OSC      "OSC=" STRINGIFY(TAMER_OSC) " "
+#define HWISTR_OSC      "OSC=" STRINGIFY2(TAMER_OSC) " "
 
 #ifdef PRESENT_DAC12
 #define HWISTR_DAC		"VCTCXO "
@@ -62,8 +68,8 @@
 #define HWISTR    		HWISTR_LMX HWISTR_LMK HWISTR_OSC HWISTR_DAC HWISTR_GPS
 
 #else
-
-#define HWISTR			STRINGIFY(HWISTR_CUSTOM)
+#error  HWISTR_CUSTOM is not supported any more
+#define HWISTR			STRINGIFY2(HWISTR_CUSTOM)
 
 #endif
 
