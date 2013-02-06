@@ -47,13 +47,16 @@
 		#include <stdbool.h>
 
 
-//#define DFU_SECTION
-#define DFU_SECTION BOOTLOADER_SECTION
+#define DFU_SECTION
+#define DFU_DATA
+#define DFU_CONST
+#define LUFA_SHARED_DATA_SECTION
 
-#define DFU_CONST  __attribute__ ((section (".bootloader.const")))
 
+//#define DFU_SECTION BOOTLOADER_SECTION
+//#define DFU_CONST  __attribute__ ((section (".bootloader.const")))
 //#define DFU_DATA
-#define DFU_DATA  __attribute__ ((section (".bootdata")))
+//#define DFU_DATA  __attribute__ ((section (".bootdata")))
 
 
 	

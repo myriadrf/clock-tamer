@@ -37,7 +37,7 @@
 
 #include "BootloaderDFU.h"
 #include "DescriptorsDFU.h"
-#include "SharedBoot.h"
+#define DFU_CONST
 
 /** Device descriptor structure. This descriptor, located in FLASH memory, describes the overall
  *  device characteristics, including the supported USB version, control endpoint size and the
@@ -140,26 +140,15 @@ USB_Descriptor_String_t DFU_CONST ProductStringDFU =
 	.UnicodeString          = L"AVR DFU Bootloader"
 };
 
-extern bool RunBootloader;
+
 /** This function is called by the library when in device mode, and must be overridden (see library "USB Descriptors"
  *  documentation) by the application code so that the address and size of a requested descriptor can be given
  *  to the USB library. When the device receives a Get Descriptor request on the control endpoint, this function
  *  is called so that the descriptor details can be passed back and the appropriate descriptor sent back to the
  *  USB host.
  */
-
-DFU_SECTION uint16_t CALLBACK_USER_USB_GetDescriptor(const uint16_t wValue, const uint8_t wIndex, const void** const DescriptorAddress)
-{
-    JMP_TRAP(TR_USB_GETDESCRIPTOR);
-}
-
 DFU_SECTION uint16_t CALLBACK_USB_GetDescriptor(const uint16_t wValue, const uint8_t wIndex, const void** const DescriptorAddress)
 {
-    if (!RunBootloader)
-    {
-        return CALLBACK_USER_USB_GetDescriptor(wValue, wIndex, DescriptorAddress);
-    }
-
 	const uint8_t  DescriptorType   = (wValue >> 8);
 	const uint8_t  DescriptorNumber = (wValue & 0xFF);
 
@@ -180,12 +169,12 @@ DFU_SECTION uint16_t CALLBACK_USB_GetDescriptor(const uint16_t wValue, const uin
 			if (!(DescriptorNumber))
 			{
 				Address = &LanguageString;
-				Size    = pgm_read_byte(&LanguageString.Header.Size);
+                Size    = (LanguageString.Header.Size);
 			}
 			else
 			{
 				Address = &ProductStringDFU;
-				Size    = pgm_read_byte(&ProductStringDFU.Header.Size);
+                Size    = (ProductStringDFU.Header.Size);
 			}
 			
 			break;

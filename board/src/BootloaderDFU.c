@@ -28,7 +28,9 @@
   this software.
 */
 
-//#define NO_DFUUPLOAD
+#define NO_DFUUPLOAD
+#define SAFE_EEPROM_ADDRESS   0x019B
+#define NO64KB
 
 /** \file
  *
@@ -38,15 +40,13 @@
 #define  INCLUDE_FROM_BOOTLOADER_C
 #include "BootloaderDFU.h"
 
-#include "SharedBoot.h"
 
-#define NO64KB
 
 /** Flag to indicate if the bootloader should be running, or should exit and allow the application code to run
  *  via a soft reset. When cleared, the bootloader will abort, the USB interface will shut down and the application
  *  jumped to via an indirect jump to location 0x0000 (or other location specified by the host).
  */
-bool RunBootloader  LUFA_SHARED_DATA_SECTION;
+//bool RunBootloader  LUFA_SHARED_DATA_SECTION;
 
 /** Flag to indicate if the bootloader is currently running in secure mode, disallowing memory operations
  *  other than erase. This is initially set to the value set by SECURE_MODE, and cleared by the bootloader
@@ -81,7 +81,7 @@ uint8_t ResponseByte DFU_DATA;
 /** Pointer to the start of the user application. By default this is 0x0000 (the reset vector), however the host
  *  may specify an alternate address when issuing the application soft-start command.
  */
-AppPtr_t AppStartPtr  DFU_DATA  =  (AppPtr_t)0x0000;
+//AppPtr_t AppStartPtr  DFU_DATA  =  (AppPtr_t)0x0000;
 
 #ifndef NO64KB
 /** 64-bit flash page number. This is concatenated with the current 16-bit address on USB AVRs containing more than
@@ -108,6 +108,7 @@ uint16_t EndAddr DFU_DATA  = 0x0000;
 #define Endpoint_Write_Word_LE Endpoint_Write_16_LE
 #define USB_ShutDown           USB_Disable
 
+#if 0
 DFU_SECTION void EVENT_USB_Device_Connect(void)
 {
     if (!RunBootloader)
@@ -157,6 +158,7 @@ DFU_SECTION void EVENT_USB_Device_StartOfFrame(void)
     if (!RunBootloader)
         CALL_TRAP(TR_USB_DEVICE_STARTOFFRAME);
 }
+#endif
 
 
 #define INFOLED           PB5
@@ -166,24 +168,30 @@ DFU_SECTION void EVENT_USB_Device_StartOfFrame(void)
 
 DFU_SECTION void SkipDfu(void)
 {
-    RunBootloader = !(PINB & 0x1);
-    if (!RunBootloader)
-        CALL_TRAP(TR_USERCODE);
+    //RunBootloader = !(PINB & 0x1);
+    //if (!RunBootloader) {
+    //   CALL_TRAP(TR_USERCODE);
+    //}
+    if (PINB & 0x1) {
+        __asm__ __volatile("jmp 0x0000;\r\n");
+    }
 
     INFOLED_DDR |=  (1 << INFOLED);
     INFOLED_PORT |= (1 << INFOLED);
 }
 
+#if 0
 DFU_SECTION void __bootvector_11(void)
 {
     __asm__ __volatile__("jmp __vector_11;\r\n");
 }
+#endif
 
 /** Main program entry point. This routine configures the hardware required by the bootloader, then continuously
  *  runs the bootloader processing routine until instructed to soft-exit, or hard-reset via the watchdog to start
  *  the loaded application code.
  */
-DFU_SECTION void bootmain(void)
+DFU_SECTION void main(void)
 {
     SkipDfu();
 
@@ -191,14 +199,16 @@ DFU_SECTION void bootmain(void)
     SetupHardwareDFU();
 
     /* Run the USB management task while the bootloader is supposed to be running */
-    while (RunBootloader || WaitForExit)
+    //while (!WaitForExit)
+    for (;;)
       USB_USBTask();
 
     /* Reset configured hardware back to their original states for the user application */
-    ResetHardwareDFU();
+    //ResetHardwareDFU();
 
     /* Start the user application */
-    AppStartPtr();
+    //AppStartPtr();
+    //((AppPtr_t)0x0000)();
 }
 
 /** Configures all hardware required for the bootloader. */
@@ -223,6 +233,7 @@ DFU_SECTION void SetupHardwareDFU(void)
 	USB_Init();
 }
 
+
 /** Resets all configured hardware required for the bootloader back to their original states. */
 DFU_SECTION void ResetHardwareDFU(void)
 {
@@ -235,11 +246,12 @@ DFU_SECTION void ResetHardwareDFU(void)
 }
 
 
+
 /** Event handler for the USB_UnhandledControlRequest event. This is used to catch standard and class specific
  *  control requests that are not handled internally by the USB library (including the DFU commands, which are
  *  all issued via the control endpoint), so that they can be handled appropriately for the application.
  */
-DFU_SECTION void DFU_EVENT_USB_Device_UnhandledControlRequest(void)
+DFU_SECTION void EVENT_USB_Device_ControlRequest(void)
 {
     /* Get the size of the command and data from the wLength value */
     SentCommand.DataSize = USB_ControlRequest.wLength;
@@ -309,19 +321,25 @@ DFU_SECTION void DFU_EVENT_USB_Device_UnhandledControlRequest(void)
                         /* Calculate the number of words to be written from the number of bytes to be written */
                         uint16_t WordsRemaining = (BytesRemaining >> 1);
 
+                        #ifndef NO64KB
                         union
                         {
                             uint16_t Words[2];
                             uint32_t Long;
                         } CurrFlashAddress                 = {.Words = {StartAddr,
-                        #ifndef NO64KB
-                            Flash64KBPage
-                        #else
-                            0
-                        #endif
-                                                              }};
+                            Flash64KBPage  }};
 
                         uint32_t CurrFlashPageStartAddress = CurrFlashAddress.Long;
+                        #else
+
+                        union
+                        {
+                            uint16_t Long;
+                        } CurrFlashAddress;
+                        CurrFlashAddress.Long =  StartAddr;
+                        uint16_t CurrFlashPageStartAddress = StartAddr;
+                        #endif
+
                         uint8_t  WordsInFlashPage          = 0;
 
                         while (WordsRemaining--)
@@ -633,13 +651,13 @@ DFU_SECTION static void ProcessBootloaderCommand(void)
         case COMMAND_READ:
             ProcessReadCommand();
             break;
-        #ifndef NO64KB
+#ifndef NO64KB
         case COMMAND_CHANGE_BASE_ADDR:
             if (IS_TWOBYTE_COMMAND(SentCommand.Data, 0x03, 0x00))              // Set 64KB flash page command
               Flash64KBPage = SentCommand.Data[2];
 
             break;
-        #endif
+#endif
     }
 }
 
@@ -674,20 +692,8 @@ DFU_SECTION static void ProcessMemProgCommand(void)
         /* If FLASH is being written to, we need to pre-erase the first page to write to */
         if (IS_ONEBYTE_COMMAND(SentCommand.Data, 0x00))
         {
-            union
-            {
-                uint16_t Words[2];
-                uint32_t Long;
-            } CurrFlashAddress = {.Words = {StartAddr,
-            #ifndef NO64KB
-              Flash64KBPage
-            #else
-              0
-            #endif
-            }};
-
             /* Erase the current page's temp buffer */
-            boot_page_erase(CurrFlashAddress.Long);
+            boot_page_erase(StartAddr);
             boot_spm_busy_wait();
         }
 
@@ -760,6 +766,7 @@ DFU_SECTION static void ProcessWriteCommand(void)
         /* Indicate that the bootloader is terminating */
         WaitForExit = true;
 
+#if 0
         /* Check if empty request data array - an empty request after a filled request retains the
            previous valid request data, but initializes the reset */
         if (!(SentCommand.DataSize))
@@ -784,6 +791,7 @@ DFU_SECTION static void ProcessWriteCommand(void)
                 RunBootloader = false;
             }
         }
+#endif
     }
     else if (IS_TWOBYTE_COMMAND(SentCommand.Data, 0x00, 0xFF))                 // Erase flash
     {
