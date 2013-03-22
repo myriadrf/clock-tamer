@@ -88,6 +88,7 @@ void FillResultPM(uint8_t* res)
 
 static void Store(uint8_t byte)
 {
+    // May be completly useless, need  ATOMIC_BLOCK(ATOMIC_FORCEON)
 	cli();
 	Buffer_StoreElement(&USARTtoUSB_Buffer, byte);
 	sei();
@@ -185,7 +186,9 @@ static void FillUint16(uint16_t val)
 uint8_t resOk[] PROGMEM = "OK";
 
 #ifndef NO_VERSION
-#if TAMER_VER == 123
+#if TAMER_VER == 130
+uint8_t resVersion[] PROGMEM = "ClockTamer SW=1.30 API=1";
+#elif TAMER_VER == 123
 uint8_t resVersion[] PROGMEM = "ClockTamer SW=1.23 API=1";
 #elif TAMER_VER == 122
 uint8_t resVersion[] PROGMEM = "ClockTamer SW=1.22 API=1";
@@ -314,11 +317,17 @@ uint16_t unused_eeVCO_Kbit     EEMEM = DEF_VCO_Kbit;
 #endif
 
 uint8_t  eeLMK_OutMask  EEMEM = DEF_OUT_MASK_LMK;
+
 uint8_t  eeAutoFreq     EEMEM = 1;
+
 
 uint16_t eeDacValue     EEMEM = 2048;
 
+#ifdef GPS_ENABLE
 uint8_t  eeAutoGPSSync  EEMEM = 1;
+#else
+uint8_t  eeAutoGPSSync  EEMEM = 0;
+#endif
 
 uint8_t  eeEnableOscillator  EEMEM = 1;
 
@@ -476,6 +485,15 @@ ISR(TIMER1_OVF_vect, ISR_BLOCK)
 ISR(TIMER0_OVF_vect, ISR_BLOCK)
 {
     if (++SelfStage == SelfStageMax) {
+        /*  Grab this idea
+         *     union {
+                    uint16_t u16[2];
+                    uint32_t u32;
+                } a;
+
+                a.u16[0] = TCNT1;
+                a.u16[1] = CounterHValue;
+         */
         uint32_t prev = SelfPrev;
         SelfPrev = TCNT1;
         SelfPrev |= (CounterHHValue << 16);        
@@ -562,6 +580,7 @@ uint8_t stComma[] PROGMEM = ",";
 uint8_t resFailed[]  PROGMEM = "FAILED";
 void DoExtraTasks(uint8_t dosend);
 
+const uint32_t test_freqs[] PROGMEM = {10000000, 13380000, 26000000, 38400000, 50000000, 51000000, 52000000, 53000000, 54000000, 55000000, 56000000, 96000000};
 
 uint16_t GetAbsDelta(uint32_t orig, uint32_t mes)
 {
@@ -582,7 +601,7 @@ uint16_t GetAbsDelta(uint32_t orig, uint32_t mes)
  * @return 0 - Ok, otherwise - number of failed tests
  *
  * 1. Check LOCK ping
- * 2. For 10 Mhz, 13.38 Mhz, 40.96 Mhz, 52 Mhz, 96 Mhz
+ * 2. For 10 Mhz, 13.38 Mhz, 30.77 Mhz, 52 Mhz, 96 Mhz
  *  a. Set freqency
  *  b. Check lock state
  *  c. Count freqency using local oscillator
@@ -601,18 +620,17 @@ static uint8_t SelfTestFull(void)
         FillResultPM(resOk);
     }
 
-    const uint32_t freqs[] = {10000000, 13380000, 40960000, 49000000, 50000000, 51000000, 52000000, 53000000, 54000000, 55000000, 56000000, 96000000};
     const uint8_t accums[] = {2, 8, 32};
 
     uint8_t i;
 
-    for (i = 0; i < (sizeof(freqs)/sizeof(freqs[0])); i++) {
+    for (i = 0; i < (sizeof(test_freqs)/sizeof(test_freqs[0])); i++) {
         DoExtraTasks(1);
 
         FillResultNoNewLinePM(stPragma);
         FillResultNoNewLinePM(stFreq);
 
-        Fout = freqs[i];
+        Fout = pgm_read_dword(&test_freqs[i]);
         FillUint32(Fout);
 
         SetLMX2531(0);
@@ -669,6 +687,10 @@ static uint8_t SelfTestFull(void)
                 uint16_t erra = GetAbsDelta(Fout, cmin);
                 uint16_t errb = GetAbsDelta(Fout, cmax);
                 uint32_t cerr = (uint32_t)erra*erra + (uint32_t)errb*errb;
+                if (j == 0) {
+                    // Reduse noise thresould in 2 samples mesurements
+                    cerr >>=1;
+                }
                 if (cerr < 1000) {
                     //SQRT error less than ~300ppm
                     FillResultPM(resOk);

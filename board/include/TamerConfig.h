@@ -24,6 +24,9 @@
 #define _TAMER_CONFIG_H_
 
 
+//#define GPS_ENABLE
+
+
 #ifndef TAMER_VER
 #error You should define TAMER_VER (10 stads for 1.0, 11 - 1.1, and 12 - 1.2, 121 - 1.21)
 #endif
@@ -34,7 +37,7 @@
     !defined(TAMER_2080_VCTXCO_26_GPS) && \
     !defined(TAMER_1650_26_GPS)
 
-# if (TAMER_VER == 12 || TAMER_VER == 121 || TAMER_VER == 122 || TAMER_VER == 123)
+# if (TAMER_VER == 12 || TAMER_VER == 121 || TAMER_VER == 122 || TAMER_VER == 123 || TAMER_VER == 130)
 #  define TAMER_2080_20
 # elif TAMER_VER == 11
 #  define TAMER_1515_20

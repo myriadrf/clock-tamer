@@ -58,7 +58,7 @@
 #define HWISTR_DAC
 #endif
 
-#ifdef PRESENT_GPS
+#if defined(PRESENT_GPS) && defined(GPS_ENABLE)
 #define HWISTR_GPS		"GPS "
 #else
 #define HWISTR_GPS

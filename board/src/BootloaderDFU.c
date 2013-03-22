@@ -39,7 +39,7 @@
 
 #define  INCLUDE_FROM_BOOTLOADER_C
 #include "BootloaderDFU.h"
-
+#include <avr/interrupt.h>
 
 
 /** Flag to indicate if the bootloader should be running, or should exit and allow the application code to run
@@ -175,11 +175,20 @@ DFU_SECTION void SkipDfu(void)
     if (PINB & 0x1) {
         MCUCR = (1 << IVCE);
         MCUCR = 0;
+        TIMSK1 = 0;
         ((AppPtr_t)0x0000)();
     }
 
     INFOLED_DDR |=  (1 << INFOLED);
     INFOLED_PORT |= (1 << INFOLED);
+
+    TCCR1B = (1 << CS11) | (1 << CS10);
+    TIMSK1 = (1 << TOIE1);
+}
+
+ISR(TIMER1_OVF_vect, ISR_BLOCK)
+{
+    INFOLED_PORT ^= (1 << INFOLED);
 }
 
 /** Main program entry point. This routine configures the hardware required by the bootloader, then continuously

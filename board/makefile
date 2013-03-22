@@ -61,7 +61,7 @@
 NODFU?=1
 SDK?=0
 GPS?=1
-TAMER_VER?=123
+TAMER_VER?=130
 
 # MCU name
 ifeq ($(TAMER_VER), 121) 
@@ -73,8 +73,16 @@ ifeq ($(TAMER_VER), 123)
 MCU = atmega32u2
 BOOT_START = 0x7000
 else
+
+ifeq ($(TAMER_VER), 130)
+MCU = atmega32u2
+BOOT_START = 0x7000
+else
+
 MCU = at90usb162
 BOOT_START = 0x3000
+endif
+
 endif
 
 endif

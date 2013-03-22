@@ -37,7 +37,6 @@
 
 #include "BootloaderDFU.h"
 #include "DescriptorsDFU.h"
-#define DFU_CONST
 
 /** Device descriptor structure. This descriptor, located in FLASH memory, describes the overall
  *  device characteristics, including the supported USB version, control endpoint size and the
@@ -59,7 +58,7 @@ USB_Descriptor_Device_t  DFU_CONST  DeviceDescriptorDFU =
 	.ProductID              = PRODUCT_ID_CODE,
 	.ReleaseNumber          = 0x0000,
 		
-	.ManufacturerStrIndex   = NO_DESCRIPTOR,
+    .ManufacturerStrIndex   = 0x01,
 	.ProductStrIndex        = 0x01,
 	.SerialNumStrIndex      = NO_DESCRIPTOR,
 		
