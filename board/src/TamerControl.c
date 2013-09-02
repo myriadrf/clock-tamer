@@ -75,18 +75,18 @@ extern TamerCommand_t command;
 
 extern RingBuff_t USARTtoUSB_Buffer;
 
-uint8_t newLine[] PROGMEM = "\r\n";
+const uint8_t newLine[] PROGMEM = "\r\n";
 
 
-void FillResultNoNewLinePM(uint8_t* res);
+void FillResultNoNewLinePM(const uint8_t *res);
 
-void FillResultPM(uint8_t* res)
+void FillResultPM(const uint8_t* res)
 {
     FillResultNoNewLinePM(res);
     FillResultNoNewLinePM(newLine);
 }
 
-void FillResultNoNewLinePM(uint8_t* res)
+void FillResultNoNewLinePM(const uint8_t* res)
 {
     uint8_t byte;
     while ((byte = pgm_read_byte(res++)))
@@ -95,7 +95,7 @@ void FillResultNoNewLinePM(uint8_t* res)
     }
 }
 
-static void FillHead(uint8_t* res, uint8_t idx)
+static void FillHead(const uint8_t* res, uint8_t idx)
 {
     uint8_t byte;
     uint8_t i;
@@ -175,27 +175,27 @@ static void FillUint16(uint16_t val)
 #endif
 
 
-uint8_t resOk[] PROGMEM = "OK";
+const uint8_t resOk[] PROGMEM = "OK";
 
 #ifndef NO_VERSION
 #if TAMER_VER == 123
-uint8_t resVersion[] PROGMEM = "ClockTamer SW=1.23 API=1";
+const uint8_t resVersion[] PROGMEM = "ClockTamer SW=1.23 API=1";
 #elif TAMER_VER == 122
-uint8_t resVersion[] PROGMEM = "ClockTamer SW=1.22 API=1";
+const uint8_t resVersion[] PROGMEM = "ClockTamer SW=1.22 API=1";
 #elif TAMER_VER == 121
-uint8_t resVersion[] PROGMEM = "ClockTamer SW=1.21 API=1";
+const uint8_t resVersion[] PROGMEM = "ClockTamer SW=1.21 API=1";
 #elif TAMER_VER == 12
-uint8_t resVersion[] PROGMEM = "ClockTamer SW=1.2 API=1";
+const uint8_t resVersion[] PROGMEM = "ClockTamer SW=1.2 API=1";
 #elif TAMER_VER == 11
-uint8_t resVersion[] PROGMEM = "ClockTamer SW=1.1 API=1";
+const uint8_t resVersion[] PROGMEM = "ClockTamer SW=1.1 API=1";
 #elif TAMER_VER == 10
-uint8_t resVersion[] PROGMEM = "ClockTamer SW=1.0 API=1";
+const uint8_t resVersion[] PROGMEM = "ClockTamer SW=1.0 API=1";
 #else
-uint8_t resVersion[] PROGMEM = "ClockTamer SW=[unknown] API=1";
+const uint8_t resVersion[] PROGMEM = "ClockTamer SW=[unknown] API=1";
 #endif
 #endif
 
-uint8_t resBadRange[] PROGMEM = "Bad tuning range";
+const uint8_t resBadRange[] PROGMEM = "Bad tuning range";
 
 
 
@@ -547,12 +547,12 @@ static uint8_t SelfTestLockPin(void)
     return res;
 }
 
-uint8_t stPragma[] PROGMEM = "SEL,F_T,EST,";
-uint8_t stLck[]  PROGMEM = "lock pin,";
-uint8_t stFreq[]  PROGMEM = "set freq,";
-uint8_t stCntd[]  PROGMEM = "counted,";
-uint8_t stComma[] PROGMEM = ",";
-uint8_t resFailed[]  PROGMEM = "FAILED";
+const uint8_t stPragma[] PROGMEM = "SEL,F_T,EST,";
+const uint8_t stLck[]  PROGMEM = "lock pin,";
+const uint8_t stFreq[]  PROGMEM = "set freq,";
+const uint8_t stCntd[]  PROGMEM = "counted,";
+const uint8_t stComma[] PROGMEM = ",";
+const uint8_t resFailed[]  PROGMEM = "FAILED";
 void DoExtraTasks(uint8_t dosend);
 
 

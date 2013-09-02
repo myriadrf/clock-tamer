@@ -6,8 +6,8 @@ __shared_data_skip = 0;
 
 MEMORY
 {
-  text      (rx)   : ORIGIN = 0, LENGTH = 128K
-  bootloader(rx)   : ORIGIN = 0x007000, LENGTH = 4K
+  text      (rx)   : ORIGIN = 0, LENGTH = 12K
+  bootloader(rx)   : ORIGIN = 0x003000, LENGTH = 4K
   bootstrap (rx)   : ORIGIN = 0, LENGTH = 128K
   data      (rw!x) : ORIGIN = 0x800060, LENGTH = 0xffa0
   bootdata  (rw!x) : ORIGIN = 0x800060, LENGTH = 0xffa0
