@@ -80,12 +80,12 @@ USB_ClassInfo_CDC_Device_t VirtualSerial_CDC_Interface =
  */
 
 void FillUint16(uint16_t val);
-void FillResultPM(uint8_t* res);
+void FillResultPM(const uint8_t* res);
 
 
 
-uint8_t resSyntax[] PROGMEM = "SYNTAX ERROR";
-uint8_t resErr[] PROGMEM = "CMD ERROR";
+const uint8_t resSyntax[] PROGMEM = "SYNTAX ERROR";
+const uint8_t resErr[] PROGMEM = "CMD ERROR";
 
 
 volatile uint8_t commands = 0;

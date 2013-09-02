@@ -52,7 +52,7 @@ extern RingBuff_t USBtoUSART_Buffer;
 
 #define WORD_SIZE       3
 
-uint8_t pCmd[]        PROGMEM  = "REG"
+const uint8_t pCmd[]  PROGMEM  = "REG"
                                  "PIN"
                                  "SET"
                                  "SAV"
@@ -66,7 +66,7 @@ uint8_t pCmd[]        PROGMEM  = "REG"
                                  "%%%";
 #define CMD_COUNT    (sizeof(pCmd)  / WORD_SIZE)
 
-uint8_t pTrg[]        PROGMEM  = "LMK"
+const uint8_t pTrg[]  PROGMEM  = "LMK"
                                  "LMX"
                                  "DAC"
                                  "LED"
@@ -77,7 +77,7 @@ uint8_t pTrg[]        PROGMEM  = "LMK"
 
 #define TRG_COUNT    (sizeof(pTrg)  / WORD_SIZE)
 
-uint8_t pDet[]        PROGMEM  = "ENB"
+const uint8_t pDet[]  PROGMEM  = "ENB"
                                  "GOE"
                                  "SYN"
                                  "OSC"
@@ -99,7 +99,7 @@ uint8_t pDet[]        PROGMEM  = "ENB"
 
 TamerCommand_t command;
 
-static inline uint8_t ParseParam(uint8_t w1, uint8_t w2, uint8_t w3, uint8_t* table)
+static inline uint8_t ParseParam(uint8_t w1, uint8_t w2, uint8_t w3, const uint8_t* table)
 {
     uint8_t i = 1;
 
@@ -189,7 +189,7 @@ uint8_t ParseCommand(void)
 			if (IsCommandSeparator(byte2) || IsCommandSeparator(byte3))
 				return 0; 
 
-            uint8_t* mem;
+            const uint8_t* mem;
             switch (step)
             {
                 case 0: mem = pCmd; break;
