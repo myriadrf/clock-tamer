@@ -100,7 +100,7 @@ class MainWindow(QtGui.QWidget):
 
         if self.gps == 0:
             self.obj.gGps.setVisible(False)
-        elif (self.ver == "1.22" or self.ver == "1.23"):
+        elif (self.ver == "1.22" or self.ver == "1.23" or self.ver == "1.30"):
             pxm = QPixmap(":/Tamer/P-img-small.png")
             spl = QSplashScreen(pxm)
             spl.show();
@@ -113,6 +113,8 @@ class MainWindow(QtGui.QWidget):
                     gpsid = self.dev.checkGps()
                     if gpsid == True:
                         break
+		    else:
+			print "GPS NOT PRESENT"
                 except:
                     pass
 
