@@ -19,3 +19,13 @@ ClockTamer may be used as a reference clock, e.g. for:
 * LTE
 * WiMAX
 * many others...
+
+## Licensing
+
+All project's source code is licensed under LGPL license.
+
+Schematics and their derivatives are licensed under Creative Commons Attribution-Share Alike 3.0 license (CC-BY-SA).
+
+Host part of the project is licensed under New BSD license.
+
+We're apologise for mixing numerous licenses in a single project, but we see this way as being the most appropriate.
