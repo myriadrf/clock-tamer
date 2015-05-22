@@ -1,0 +1,9 @@
+# Introduction #
+
+We use an algorithm without complex computations due to the limitations of AVR chips. Hardware timer is capable of counting only frequency less then 3.5Mhz, so the firmware initialize LMK01000 divider to didide 52Mhz to the maximum value below 3.5Mhz. So each 1pps tick it register 52Mhz/devider ticks of output frequency.  According to EB-230 datasheet, 1pps could have 100ns jitter and it's a big value to perform each value without filtration and moreover we found that there are more deviation due to cloud movement. So ClockTamer use the following algorithm:
+
+  1. It sum 52Mhz/divider ticks over '`divider`' one pps ticks. So this value represent output frequency but measured over '`divider`' seconds. Moreover it does more than that. This value wouldn't be the same as if there was no divider at all. Since measuring accumulates over period '`divider`' it reduces jitter.
+  1. It use exponential filtration in the following statement `FilteredVal = (FILTER_EXP_ALPHA-1)*(FilteredVal/FILTER_EXP_ALPHA) + (1pps_count);` where FILTER\_EXP\_ALPHA==32, "1pps\_count" value of the input counter (for 52Mhz/divider in 1pps sampling)
+    1. If 1pps\_count doesn't belong less than 1% corridor (the precise value I can't remember) of `FilteredVal/FILTER_EXP_ALPHA` it won't be used and this value disgarded for the first time
+    1. If this disgardance occurs more than 3 times in row `FilteredVal` resets and syncronization goes from the beginning
+  1. Each time `FilteredVal` get updated from the previous state more than 2bits in absolute the VCO get tuned (it calculates the offset from the internal 20Mhz oscillator and updates its frequency to get the precise output)
